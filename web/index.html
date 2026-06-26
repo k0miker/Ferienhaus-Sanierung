@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ferienhaus Fuerstenau - Sanierungszentrale</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -149,109 +150,72 @@
           <p class="eyebrow">Bestand</p>
           <h2>Grundriss und Aufmass</h2>
           <p>
-            Standard ist jetzt das echte Planfoto. Die farbigen Flaechen, Labels und
-            Masse liegen nur als transparente Orientierungsschicht darueber. So bleibt
-            die Originalgeometrie sichtbar und die Arbeitsgrafik erfindet keine Waende.
+            Standard ist jetzt der nachgebaute Grundriss aus dem Planungstool. Er ist
+            deutlich besser lesbar als das Foto und enthaelt Masse, Fensterangaben,
+            Raumhoehen und Flaechen. Das Originalfoto bleibt als Kontrollquelle verlinkt.
           </p>
           <div class="quick-actions">
+            <a class="button primary" href="../01_bestand/grundrisse/Grundriss.png">Nachgebauter Grundriss</a>
             <a class="button primary" href="../01_bestand/bauunterlagen/26%20388%20014%20Grundrisse.pdf">Grundriss-PDF</a>
             <a class="button" href="../01_bestand/grundrisse/grundriss-ausschnitt-2026-06-26-214844.png">Planfoto</a>
             <a class="button" href="../01_bestand/grundrisse/grundriss-vorlaeufig.svg">alte SVG-Arbeitsgrafik</a>
           </div>
-          <div class="viewer-controls" aria-label="Grundriss-Ebenen">
-            <label><input class="toggle-rooms" type="checkbox" checked> Raeume</label>
-            <label><input class="toggle-dims" type="checkbox" checked> Masse</label>
-            <label><input class="toggle-notes" type="checkbox" checked> Hinweise</label>
-          </div>
           <ul class="checklist">
-            <li>Originalplan bleibt sichtbar</li>
-            <li>Overlays sind nur Orientierung</li>
-            <li>Massketten separat dokumentiert</li>
+            <li>Nachgebauter Plan als Arbeitsgrundlage</li>
+            <li>Originalfoto als Kontrollquelle</li>
+            <li>Flächen aus Tool abgelesen</li>
             <li>Vor-Ort-Aufmass bleibt noetig</li>
           </ul>
           <div class="room-list" aria-label="Raeume im Grundriss">
             <article>
               <span class="swatch living"></span>
               <div>
-                <strong>Wohnen</strong>
-                <small>[ABGELESEN] Groesserer Aufenthaltsraum; geplante Oeffnung zur Kueche pruefen.</small>
+                <strong>Wohnen / Bestand links</strong>
+                <small>[ABGELESEN] ca. 23,39 m2; H=270.</small>
               </div>
             </article>
             <article>
               <span class="swatch kitchen"></span>
               <div>
                 <strong>Kueche</strong>
-                <small>[ABGELESEN] Angrenzend an Wohnen; Leitungen und Wanddurchbruch offen.</small>
+                <small>[ABGELESEN] ca. 5,26 m2; H=270.</small>
               </div>
             </article>
             <article>
               <span class="swatch sleep"></span>
               <div>
                 <strong>Schlafen</strong>
-                <small>[ABGELESEN] Lage aus Planbild uebertragen; genaue Masse offen.</small>
+                <small>[ABGELESEN] ca. 13,42 m2; H=270.</small>
               </div>
             </article>
             <article>
               <span class="swatch hall"></span>
               <div>
-                <strong>Diele</strong>
-                <small>[ABGELESEN] Treppen-/Erschliessungsbereich schematisch nachgezeichnet.</small>
+                <strong>Diele / Treppe</strong>
+                <small>[ABGELESEN] ca. 11,11 m2; H=270.</small>
               </div>
             </article>
             <article>
               <span class="swatch bath"></span>
               <div>
                 <strong>Bad/WC</strong>
-                <small>[ABGELESEN] Nassbereich; Bestand Warmwasser und Leitungen offen.</small>
+                <small>[ABGELESEN] ca. 5,59 m2 plus kleiner Raum ca. 3,48 m2; genaue Nutzung pruefen.</small>
               </div>
             </article>
             <article>
               <span class="swatch store"></span>
               <div>
-                <strong>Abstellen</strong>
-                <small>[ABGELESEN] Nebenraum; Nutzung und Technikbezug noch klaeren.</small>
+                <strong>Weitere Ebene / rechte Ansicht</strong>
+                <small>[ABGELESEN] Raeume ca. 23,39 m2, 5,12 m2, 7,24 m2 und 27,27 m2.</small>
               </div>
             </article>
           </div>
         </div>
         <figure class="plan-frame">
           <div class="plan-viewer">
-            <img class="plan-photo" src="../01_bestand/grundrisse/grundriss-ausschnitt-2026-06-26-214844.png" alt="Originalausschnitt des Grundrissplans">
-            <svg class="plan-overlay" viewBox="0 0 512 665" aria-hidden="true">
-              <g class="overlay-rooms">
-                <polygon class="room-zone living" points="106,178 286,179 286,342 83,343 82,284 106,284"/>
-                <polygon class="room-zone kitchen" points="286,342 399,342 400,439 287,439"/>
-                <polygon class="room-zone sleep" points="398,439 492,440 491,569 399,568"/>
-                <polygon class="room-zone hall" points="82,343 286,342 287,439 180,440 178,568 80,568"/>
-                <polygon class="room-zone bath" points="181,440 287,440 287,568 181,568"/>
-                <polygon class="room-zone store" points="82,440 180,440 180,568 82,568"/>
-                <text x="166" y="258">Wohnen</text>
-                <text x="315" y="391">Kueche</text>
-                <text x="424" y="512">Schlafen</text>
-                <text x="190" y="397">Diele</text>
-                <text x="208" y="511">Bad/WC</text>
-                <text x="101" y="511">Abstell.</text>
-              </g>
-              <g class="overlay-dims">
-                <line x1="82" y1="72" x2="399" y2="72"/>
-                <text x="225" y="63">7,24 m</text>
-                <line x1="399" y1="112" x2="490" y2="112"/>
-                <text x="428" y="101">2,885</text>
-                <line x1="82" y1="612" x2="492" y2="612"/>
-                <text x="265" y="632">7,26 m</text>
-                <line x1="452" y1="174" x2="452" y2="568"/>
-                <text x="462" y="366">10,24 m</text>
-                <line x1="426" y1="174" x2="426" y2="568"/>
-                <text x="405" y="366">10,09 m</text>
-              </g>
-              <g class="overlay-notes">
-                <line class="planned" x1="286" y1="206" x2="286" y2="322"/>
-                <text x="300" y="283">geplante Oeffnung?</text>
-                <text x="30" y="642">Foto nicht entzerrt - Overlays nur Orientierung</text>
-              </g>
-            </svg>
+            <img class="plan-photo clean-plan" src="../01_bestand/grundrisse/Grundriss.png" alt="Nachgebauter bemaßter Grundriss">
           </div>
-          <figcaption>Originalfoto als Grundlage; transparente Overlays fuer Raeume, Masse und Hinweise.</figcaption>
+          <figcaption>Nachgebauter Grundriss aus Planungstool; Originalplan und Vor-Ort-Aufmass weiter als Pruefgrundlage verwenden.</figcaption>
         </figure>
       </section>
 
@@ -305,5 +269,22 @@
         </div>
       </section>
     </main>
+
+    <dialog class="markdown-dialog" id="markdownDialog" aria-labelledby="markdownTitle">
+      <div class="markdown-shell">
+        <header class="markdown-header">
+          <div>
+            <p class="eyebrow">Dokument</p>
+            <h2 id="markdownTitle">Markdown Viewer</h2>
+            <p class="markdown-path" id="markdownPath"></p>
+          </div>
+          <div class="markdown-actions">
+            <a class="button" id="markdownRawLink" href="#">Original oeffnen</a>
+            <button class="button primary" id="markdownClose" type="button">Schliessen</button>
+          </div>
+        </header>
+        <article class="markdown-body" id="markdownBody"></article>
+      </div>
+    </dialog>
   </body>
 </html>

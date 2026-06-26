@@ -4,15 +4,33 @@ Stand: 2026-06-26
 
 ## Datei
 
+- Nachgebauter Grundriss: `Grundriss.png`
 - SVG: `grundriss-vorlaeufig.svg`
 - Planfoto fuer Web-Viewer: `grundriss-ausschnitt-2026-06-26-214844.png`
 - Quelle: `26 388 014 Grundrisse.pdf` und vorhandene Screenshots im Ordner `01_bestand/grundrisse/`
 
 ## Empfohlene Arbeitsweise
 
-Die Webansicht verwendet das echte Planfoto als fuehrende Geometrie und legt transparente Overlays fuer Raeume, Masse und Hinweise darueber. Das ist belastbarer als eine frei nachgezeichnete SVG-Geometrie, weil Waende, Fenster und Tueren im Original sichtbar bleiben.
+Die Webansicht verwendet jetzt `Grundriss.png` als fuehrende Arbeitsansicht, weil diese Datei sauber nachgebaut, gerade ausgerichtet und gut bemaßt ist.
+
+Das echte Planfoto bleibt als Kontrollquelle erhalten. Bei Abweichungen zwischen `Grundriss.png`, Originalfoto/PDF und Vor-Ort-Aufmass haben Originalquelle beziehungsweise Ist-Aufmass Vorrang.
 
 Die Datei `grundriss-vorlaeufig.svg` bleibt nur eine Arbeitsgrafik und sollte nicht als massgebliche Zeichnung behandelt werden.
+
+## Aus `Grundriss.png` abgelesene Flaechen
+
+| Bereich / Raum | Flaeche | Hoehe | Qualitaet | Hinweis |
+|---|---:|---:|---|---|
+| Wohnen / grosser Raum links | 23,39 m2 | 270 cm | [ABGELESEN] | Raumname aus bisheriger Planung zuordnen |
+| Kueche | 5,26 m2 | 270 cm | [ABGELESEN] | Zuordnung aus Lage und bisheriger Planung |
+| Schlafen | 13,42 m2 | 270 cm | [ABGELESEN] | Zuordnung aus Planbild |
+| Diele / Treppe | 11,11 m2 | 270 cm | [ABGELESEN] | genaue Abgrenzung pruefen |
+| Bad/WC / Nebenraum | 5,59 m2 | 270 cm | [ABGELESEN] | Nutzung anhand Originalplan pruefen |
+| kleiner Raum unten rechts | 3,48 m2 | 270 cm | [ABGELESEN] | Nutzung anhand Originalplan pruefen |
+| rechte Ansicht Raum links | 23,39 m2 | 270 cm | [ABGELESEN] | Ebene/Zuordnung noch klaeren |
+| rechte Ansicht kleiner Raum oben | 5,12 m2 | 270 cm | [ABGELESEN] | Ebene/Zuordnung noch klaeren |
+| rechte Ansicht Treppenbereich | 7,24 m2 | 270 cm | [ABGELESEN] | Ebene/Zuordnung noch klaeren |
+| rechte Ansicht Raum rechts | 27,27 m2 | 270 cm | [ABGELESEN] | Ebene/Zuordnung noch klaeren |
 
 ## Datenqualitaet
 
