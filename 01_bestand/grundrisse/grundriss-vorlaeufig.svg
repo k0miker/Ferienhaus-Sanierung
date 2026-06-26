@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Vorlaeufig nachgezeichneter Grundriss Ferienhaus Fuerstenau</title>
+  <desc id="desc">Schematische SVG-Zeichnung nach verbessertem Planfoto. Ablesbare Masse: Breite oben 7,24 m, Laengsmass rechts 10,24 m beziehungsweise 10,09 m. Innenaufteilung und Oeffnungen sind vorlaeufig.</desc>
+  <defs>
+    <style>
+      .sheet { fill: #fbfaf6; }
+      .outer { fill: #fffdf8; stroke: #1f252b; stroke-width: 14; stroke-linejoin: miter; }
+      .wall { fill: none; stroke: #1f252b; stroke-width: 9; stroke-linecap: square; stroke-linejoin: miter; }
+      .thin { fill: none; stroke: #68717a; stroke-width: 2; }
+      .dim { fill: none; stroke: #56616b; stroke-width: 2; marker-start: url(#tick); marker-end: url(#tick); }
+      .window { fill: none; stroke: #2f74a8; stroke-width: 6; stroke-linecap: square; }
+      .door { fill: none; stroke: #9a6a2f; stroke-width: 3; }
+      .living { fill: #f0eadf; }
+      .kitchen { fill: #e8efe8; }
+      .sleep { fill: #eceaf2; }
+      .hall { fill: #f3f0e8; }
+      .wet { fill: #e7f0f3; }
+      .store { fill: #ece7dd; }
+      .label { fill: #20242a; font: 700 17px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .small { fill: #56616b; font: 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .dimtext { fill: #20242a; font: 700 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .note { fill: #7a3f32; font: 700 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+    </style>
+    <marker id="tick" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M4 0 L4 8" stroke="#56616b" stroke-width="2"/>
+    </marker>
+  </defs>
+
+  <rect class="sheet" x="0" y="0" width="1180" height="1040"/>
+
+  <text class="label" x="56" y="42">Grundriss EG - vorlaeufige Nachzeichnung nach verbessertem Planfoto</text>
+  <text class="small" x="56" y="64">Stand 2026-06-26. Masse sind aus dem Foto abgelesen; unklare Werte bleiben pruefpflichtig.</text>
+
+  <!-- Massstab Arbeitsgrafik: 1 m = 70 px. Planmass: 7,24 m x 10,24 m. -->
+  <g id="plan" transform="translate(92 118)">
+    <!-- Outer footprint: 7,24 m x 10,24 m => 507 x 717 px -->
+    <rect class="outer" x="0" y="0" width="507" height="717"/>
+
+    <!-- Room fills, schematically aligned to visible plan image -->
+    <rect class="living" x="18" y="18" width="263" height="249"/>
+    <rect class="kitchen" x="286" y="267" width="115" height="112"/>
+    <rect class="sleep" x="401" y="379" width="88" height="300"/>
+    <rect class="hall" x="18" y="267" width="268" height="188"/>
+    <rect class="store" x="18" y="455" width="98" height="224"/>
+    <rect class="wet" x="116" y="455" width="170" height="224"/>
+
+    <!-- Inner walls, approximate from plan image -->
+    <path class="wall" d="M0 267 H138"/>
+    <path class="wall" d="M198 267 H507"/>
+    <path class="wall" d="M286 267 V717"/>
+    <path class="wall" d="M401 267 V717"/>
+    <path class="wall" d="M0 455 H286"/>
+    <path class="wall" d="M116 455 V717"/>
+
+    <!-- Stair, schematic -->
+    <g transform="translate(45 286)">
+      <rect class="thin" x="0" y="0" width="98" height="88"/>
+      <line class="thin" x1="8" y1="80" x2="90" y2="10"/>
+      <line class="thin" x1="18" y1="72" x2="18" y2="57"/>
+      <line class="thin" x1="30" y1="62" x2="30" y2="47"/>
+      <line class="thin" x1="42" y1="52" x2="42" y2="37"/>
+      <line class="thin" x1="54" y1="42" x2="54" y2="27"/>
+      <line class="thin" x1="66" y1="32" x2="66" y2="17"/>
+    </g>
+
+    <!-- Doors / openings, schematic -->
+    <path class="door" d="M198 267 A64 64 0 0 1 134 331"/>
+    <path class="door" d="M286 350 A58 58 0 0 1 344 292"/>
+    <path class="door" d="M401 350 A58 58 0 0 1 459 292"/>
+    <path class="door" d="M116 516 A54 54 0 0 0 170 462"/>
+
+    <!-- Windows / exterior openings as visible in plan image, approximate -->
+    <line class="window" x1="70" y1="0" x2="146" y2="0"/>
+    <line class="window" x1="230" y1="0" x2="340" y2="0"/>
+    <line class="window" x1="507" y1="114" x2="507" y2="180"/>
+    <line class="window" x1="507" y1="232" x2="507" y2="292"/>
+    <line class="window" x1="326" y1="717" x2="411" y2="717"/>
+    <line class="window" x1="438" y1="717" x2="489" y2="717"/>
+
+    <!-- Planned opening between Wohnen and Kueche area -->
+    <line x1="286" y1="112" x2="286" y2="246" stroke="#c24b38" stroke-width="7" stroke-dasharray="13 9"/>
+    <text class="note" x="298" y="200">geplante Oeffnung?</text>
+
+    <!-- Labels -->
+    <text class="label" x="108" y="140">Wohnen</text>
+    <text class="small" x="106" y="160">[ABGELESEN]</text>
+    <text class="label" x="318" y="333">Kueche</text>
+    <text class="small" x="318" y="353">[ABGELESEN]</text>
+    <text class="label" x="432" y="545" transform="rotate(90 432 545)">Schlafen</text>
+    <text class="label" x="160" y="372">Diele</text>
+    <text class="label" x="42" y="590">Abstell.</text>
+    <text class="label" x="166" y="590">Bad/WC</text>
+
+    <!-- Main dimensions -->
+    <line class="dim" x1="0" y1="-42" x2="507" y2="-42"/>
+    <line class="thin" x1="0" y1="-56" x2="0" y2="-18"/>
+    <line class="thin" x1="507" y1="-56" x2="507" y2="-18"/>
+    <text class="dimtext" x="232" y="-52">7,24 m</text>
+
+    <line class="dim" x1="552" y1="0" x2="552" y2="717"/>
+    <line class="thin" x1="530" y1="0" x2="570" y2="0"/>
+    <line class="thin" x1="530" y1="717" x2="570" y2="717"/>
+    <text class="dimtext" x="566" y="330" transform="rotate(90 566 330)">10,24 m</text>
+
+    <line class="dim" x1="585" y1="10" x2="585" y2="706"/>
+    <text class="dimtext" x="599" y="320" transform="rotate(90 599 320)">10,09 m</text>
+
+    <!-- Horizontal chain dimensions copied from visible plan image -->
+    <g transform="translate(0 776)">
+      <line class="dim" x1="0" y1="0" x2="507" y2="0"/>
+      <text class="dimtext" x="225" y="24">7,26 m [ABGELESEN]</text>
+      <line class="thin" x1="0" y1="-12" x2="0" y2="12"/>
+      <line class="thin" x1="507" y1="-12" x2="507" y2="12"/>
+      <line class="dim" x1="17" y1="40" x2="490" y2="40"/>
+      <text class="dimtext" x="220" y="64">7,01 m [ABGELESEN]</text>
+      <line class="thin" x1="88" y1="28" x2="88" y2="52"/>
+      <line class="thin" x1="202" y1="28" x2="202" y2="52"/>
+      <line class="thin" x1="317" y1="28" x2="317" y2="52"/>
+      <text class="small" x="48" y="34">1,26</text>
+      <text class="small" x="128" y="34">1,635</text>
+      <text class="small" x="238" y="34">2,415</text>
+    </g>
+  </g>
+
+  <g transform="translate(690 118)">
+    <text class="label" x="0" y="0">Abgelesene Massketten</text>
+    <text class="small" x="0" y="28">Aus Screenshot 2026-06-26 21:48:44</text>
+    <text class="dimtext" x="0" y="68">Breite oben: 7,24 m</text>
+    <text class="dimtext" x="0" y="94">Innenbreite oben: 6,51 m</text>
+    <text class="dimtext" x="0" y="120">Teilbreiten oben: 3,525 m / 0,10 m / 2,885 m</text>
+    <text class="dimtext" x="0" y="146">Breite unten: 7,26 m</text>
+    <text class="dimtext" x="0" y="172">Innenbreite unten: 7,01 m</text>
+    <text class="dimtext" x="0" y="198">Teilbreiten unten: 1,26 m / 1,635 m / 2,415 m</text>
+    <text class="dimtext" x="0" y="224">Laenge rechts: 10,24 m / 10,09 m</text>
+    <text class="dimtext" x="0" y="250">Vertikale Teilmasse sichtbar: 3,55 m / 1,25 m / 2,76 m</text>
+    <text class="dimtext" x="0" y="276">Kleine Masse sichtbar: 1,01 / 1,26 / 1,235 / 1,76 m</text>
+    <text class="note" x="0" y="326">Wichtig: Foto ist nicht entzerrt.</text>
+    <text class="small" x="0" y="352">Innenwaende und Oeffnungen bleiben Arbeitsgrafik, bis</text>
+    <text class="small" x="0" y="372">Originalplan oder Vor-Ort-Aufmass geprueft sind.</text>
+  </g>
+</svg>
