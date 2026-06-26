@@ -1,0 +1,133 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { KOSTEN_GRUPPEN } from "../content.config";
+
+const positionen = (await getCollection("kosten")).sort(
+  (a, b) => b.data.betrag - a.data.betrag,
+);
+
+const euro = (n: number) =>
+  n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
+// Summen je Gruppe (AGENTS.md §13)
+const proGruppe = new Map<string, number>();
+for (const g of KOSTEN_GRUPPEN) proGruppe.set(g, 0);
+for (const p of positionen) proGruppe.set(p.data.gruppe, (proGruppe.get(p.data.gruppe) ?? 0) + p.data.betrag);
+
+const istFoerderung = (g: string) => g.startsWith("Förderung");
+const geplant = KOSTEN_GRUPPEN.filter((g) => !istFoerderung(g)).reduce(
+  (s, g) => s + (proGruppe.get(g) ?? 0),
+  0,
+);
+const foerderungBewilligt = (proGruppe.get("Förderung bewilligt") ?? 0) + (proGruppe.get("Förderung ausgezahlt") ?? 0);
+const bezahlt = proGruppe.get("bezahlt") ?? 0;
+
+// Budget-Ampel gegen 60–100 T€
+const BUDGET_MAX = 100000;
+const pct = Math.min(100, Math.round((geplant / BUDGET_MAX) * 100));
+const ampel = geplant === 0 ? "" : geplant <= 80000 ? "gruen" : geplant <= 100000 ? "gelb" : "rot";
+
+const gruppenFarbe: Record<string, string> = {
+  geschätzt: "warn",
+  "Angebot vorhanden": "info",
+  beauftragt: "info",
+  bezahlt: "ok",
+  Reserve: "warn",
+  "Förderung beantragt": "warn",
+  "Förderung bewilligt": "ok",
+  "Förderung ausgezahlt": "ok",
+};
+const editBtn = "/admin/index.html#/collections/kosten/new";
+---
+
+<Base title="Kosten" current="kosten" crumb="Kosten">
+  <div class="page-head">
+    <p class="eyebrow">Budget &amp; Kosten</p>
+    <h2>💶 Kosten</h2>
+    <p class="lead">
+      Budgetrahmen 60.000–100.000 €. Gruppen getrennt nach AGENTS.md §13. Förderung gilt erst ab schriftlicher
+      Bewilligung als gesichert.
+    </p>
+    <div class="btn-row">
+      <a class="btn primary" href={editBtn}>+ Kostenposition erfassen</a>
+      <a class="btn" href="/docs/06_kosten/kostenrechnung-prognose">📊 Kostenrechnung-Prognose (WP vs. Split)</a>
+    </div>
+  </div>
+
+  <!-- Budget-Ampel -->
+  <div class="card" style="margin-bottom:20px">
+    <h3>Budget <span style="float:right" class={`badge ${ampel === "rot" ? "bad" : ampel === "gelb" ? "warn" : "ok"}`}>
+      {geplant === 0 ? "noch leer" : `${pct}% von 100 T€`}</span></h3>
+    <div style="height:14px; border-radius:8px; background:var(--panel-2); overflow:hidden; margin:10px 0">
+      <div style={`height:100%; width:${pct}%; background:var(--${ampel === "rot" ? "bad" : ampel === "gelb" ? "warn" : "ok"})`}></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:12px" class="muted">
+      <span>0 €</span><span>60 T€</span><span>80 T€</span><span>100 T€</span>
+    </div>
+  </div>
+
+  <!-- Kennzahlen -->
+  <div class="grid cols-4" style="margin-bottom:22px">
+    <div class="card stat"><span class="label">Geplant gesamt</span><span class="value">{euro(geplant)}</span></div>
+    <div class="card stat"><span class="label">Davon bezahlt</span><span class="value">{euro(bezahlt)}</span></div>
+    <div class="card stat"><span class="label">Förderung bewilligt</span><span class="value">{euro(foerderungBewilligt)}</span></div>
+    <div class="card stat"><span class="label">Positionen</span><span class="value">{positionen.length}</span></div>
+  </div>
+
+  <!-- Summen je Gruppe -->
+  <h3 style="margin:8px 0 12px">Summen je Gruppe</h3>
+  <div class="grid cols-4" style="margin-bottom:24px">
+    {
+      KOSTEN_GRUPPEN.map((g) => (
+        <div class="card stat">
+          <span class="label">
+            <span class={`badge ${gruppenFarbe[g] ?? "info"}`}>{g}</span>
+          </span>
+          <span class="value" style="font-size:18px">{euro(proGruppe.get(g) ?? 0)}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- Positionen -->
+  <h3 style="margin:8px 0 12px">Positionen</h3>
+  <div class="card" style="padding:0; overflow:hidden">
+    {
+      positionen.length ? (
+        <table class="prose" style="margin:0; width:100%">
+          <thead>
+            <tr><th>Titel</th><th>Bereich</th><th>Gruppe</th><th style="text-align:right">Betrag</th><th>Quelle</th></tr>
+          </thead>
+          <tbody>
+            {positionen.map((p) => (
+              <tr>
+                <td><b>{p.data.titel}</b>{p.data.notiz && <div class="muted" style="font-size:12px">{p.data.notiz}</div>}</td>
+                <td>{p.data.bereich}</td>
+                <td><span class={`badge ${gruppenFarbe[p.data.gruppe] ?? "info"}`}>{p.data.gruppe}</span></td>
+                <td style="text-align:right; white-space:nowrap">
+                  {euro(p.data.betrag)}<br /><span class="muted" style="font-size:11px">{p.data.brutto ? "brutto" : "netto"}</span>
+                </td>
+                <td class="muted" style="font-size:13px">{p.data.quelle ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p class="empty">
+          Noch keine Kostenpositionen. Lege die erste über „+ Kostenposition erfassen“ an –
+          Summen, Gruppen und Budget-Ampel füllen sich automatisch.
+        </p>
+      )
+    }
+  </div>
+
+  <p class="muted" style="font-size:13px; margin-top:16px">
+    Erfasste Positionen liegen als Markdown in <code>06_kosten/positionen/</code> und werden hier automatisch ausgewertet.
+    Weitere Kostendokumente:
+    <a href="/docs/06_kosten/kostenplan">Kostenplan</a> ·
+    <a href="/docs/06_kosten/zahlungen">Zahlungen</a> ·
+    <a href="/docs/06_kosten/eigenleistung">Eigenleistung</a> ·
+    <a href="/docs/06_kosten/reserve">Reserve</a>
+  </p>
+</Base>

@@ -1,7 +1,9 @@
-# ADR-001: Fenster
-
-Status: ZU PRUEFEN  
-Datum: 2026-06-26
+---
+title: "ADR-001: Fenster"
+status: "ZU PRÜFEN"
+datum: 2026-06-26
+verantwortlich: ""
+---
 
 ## Fragestellung
 

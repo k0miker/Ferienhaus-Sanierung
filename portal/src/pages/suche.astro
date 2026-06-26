@@ -1,0 +1,74 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Suche" current="suche" crumb="Suche">
+  <div class="page-head">
+    <p class="eyebrow">Volltextsuche</p>
+    <h2>🔍 Suche</h2>
+  </div>
+
+  <div class="searchbox" style="max-width:520px; margin:0 0 20px">
+    <input type="search" id="q" placeholder="Suchbegriff…" autocomplete="off" autofocus />
+  </div>
+
+  <p id="hint" class="muted">Tippe einen Begriff – durchsucht alle Projektdokumente.</p>
+  <div id="results" class="grid cols-2"></div>
+</Base>
+
+<script>
+  type Item = { url: string; title: string; section: string; icon: string; excerpt: string; text: string };
+  const input = document.getElementById("q") as HTMLInputElement;
+  const results = document.getElementById("results")!;
+  const hint = document.getElementById("hint")!;
+  let data: Item[] = [];
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+  function render(q: string) {
+    const query = q.trim().toLowerCase();
+    if (!query) {
+      results.innerHTML = "";
+      hint.textContent = "Tippe einen Begriff – durchsucht alle Projektdokumente.";
+      return;
+    }
+    const terms = query.split(/\s+/);
+    const hits = data
+      .map((d) => {
+        const hay = (d.title + " " + d.section + " " + d.text).toLowerCase();
+        let score = 0;
+        for (const t of terms) {
+          if (d.title.toLowerCase().includes(t)) score += 10;
+          if (hay.includes(t)) score += 1;
+          else score -= 5;
+        }
+        return { d, score };
+      })
+      .filter((h) => h.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 40);
+
+    hint.textContent = `${hits.length} Treffer`;
+    results.innerHTML = hits
+      .map(
+        ({ d }) => `
+        <a class="card link" href="${d.url}">
+          <h3 style="font-size:15px">${esc(d.title)}</h3>
+          <span class="badge info">${d.icon} ${esc(d.section)}</span>
+          <p class="meta" style="margin-top:10px">${esc(d.excerpt)}</p>
+        </a>`,
+      )
+      .join("");
+  }
+
+  fetch("/search-index.json")
+    .then((r) => r.json())
+    .then((d: Item[]) => {
+      data = d;
+      const q = new URLSearchParams(location.search).get("q");
+      if (q) { input.value = q; render(q); }
+    });
+
+  input.addEventListener("input", () => render(input.value));
+</script>

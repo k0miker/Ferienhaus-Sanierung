@@ -1,0 +1,93 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { titleFor, sectionFor } from "../../lib/sections";
+import { statusClass } from "../../lib/status";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return docs.map((doc) => ({ params: { slug: doc.id }, props: { doc } }));
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+const section = sectionFor(doc.id);
+const title = titleFor(doc);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const rawHref = "/" + doc.id + ".md";
+const cmsLink = section.key === "08_entscheidungen" ? "/admin/index.html#/collections/entscheidungen" : null;
+---
+
+<Base title={title} current={section.key} crumb={section.label}>
+  <div class="page-head">
+    <p class="eyebrow">{section.icon} {section.label}</p>
+    <h2 data-pagefind-meta="title">{title}</h2>
+    <div class="btn-row">
+      {doc.data.status && <span class={`badge ${statusClass(doc.data.status)}`}>{doc.data.status}</span>}
+      <a class="btn" href={`/bereich/${section.key}`}>← {section.label}</a>
+      {cmsLink && <a class="btn primary" href={cmsLink}>Im CMS bearbeiten</a>}
+      <a class="btn" href={rawHref} target="_blank" rel="noopener">Markdown-Original ↗</a>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: minmax(0,1fr) auto; gap:32px; align-items:start">
+    <article class="prose" id="docbody" data-pagefind-body>
+      <Content />
+    </article>
+    {
+      toc.length > 2 && (
+        <nav class="card" style="position:sticky; top:78px; min-width:200px; max-width:240px; font-size:13px">
+          <h3 style="font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">
+            Auf dieser Seite
+          </h3>
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px">
+            {toc.map((h) => (
+              <li style={`padding-left:${(h.depth - 2) * 12}px`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+</Base>
+
+<script>
+  // Qualitäts-/Evidenz-Tags aus AGENTS.md §4 farblich hervorheben.
+  const TAGS: Record<string, string> = {
+    BELEGT: "#163524;color:#bdf0cf",
+    ABGELESEN: "#16263a;color:#c4e2ff",
+    ANGABE: "#2a2433;color:#e0c8ff",
+    ANNAHME: "#352b14;color:#ffe6a8",
+    OFFEN: "#341a1a;color:#ffc4c4",
+    WIDERSPRUCH: "#3a1410;color:#ffb3a0",
+  };
+  const re = /\[(BELEGT|ABGELESEN|ANGABE|ANNAHME|OFFEN|WIDERSPRUCH)\]/g;
+  const walker = document.createTreeWalker(
+    document.getElementById("docbody")!,
+    NodeFilter.SHOW_TEXT,
+  );
+  const targets: Text[] = [];
+  let n: Node | null;
+  while ((n = walker.nextNode())) {
+    if (re.test(n.textContent || "")) targets.push(n as Text);
+  }
+  for (const node of targets) {
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    const text = node.textContent || "";
+    text.replace(re, (match, tag, idx: number) => {
+      frag.append(text.slice(last, idx));
+      const span = document.createElement("span");
+      span.className = "q-tag";
+      span.setAttribute("style", "background:" + TAGS[tag]);
+      span.textContent = tag;
+      frag.append(span);
+      last = idx + match.length;
+      return match;
+    });
+    frag.append(text.slice(last));
+    node.parentNode?.replaceChild(frag, node);
+  }
+</script>

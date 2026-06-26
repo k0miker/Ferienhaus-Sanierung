@@ -2,18 +2,21 @@
 
 ## Bestand
 
-- Ist das Baujahr 1978 durch Unterlagen belegt?
-- Wie genau ist der Wandaufbau?
-- Gibt es einen geeigneten Hohlraum fuer Einblasdaemmung?
-- Wie ist der Dachaufbau?
-- Welche Schadstellen oder Feuchteprobleme gibt es?
-- Welche Grundrisse und Raumgroessen liegen vor?
+- ~~Ist das Baujahr 1978 durch Unterlagen belegt?~~ **ERLEDIGT [BELEGT]**: VARIODOMO-Nachweis, Bremen 13.6.1978.
+- ~~Wie genau ist der Wandaufbau?~~ **Kernwand belegt** (24 cm Holzspanstein, massiv, U≈0,992) – aber:
+- **Gibt es einen Hohlraum zwischen Klinker und Kernwand (für Einblasdämmung)?** [WIDERSPRUCH] 44 cm vs. 27,5 cm Kernwand → Endoskopie nötig.
+- **Ist das Obergeschoss beheizter Wohnraum oder unbeheizter Speicher?** [WIDERSPRUCH] Grundriss zeigt OG-Räume, Bauunterlage sagt „nicht ausgebautes DG".
+- Wie ist der Dachaufbau (Form, Neigung, Eindeckung, Zustand)?
+- Sind die Holzfenster (Uw≈3,0) noch original? Gibt es noch Glasbaustein-Flächen?
+- Welche Schadstellen oder Feuchteprobleme gibt es (besonders Holzspanbeton, Boden gg. Erdreich)?
+- Verfügbare Aufbauhöhe der Böden (für neuen Aufbau + Dämmung)?
 
 ## Gebaeudehuelle
 
 - Sind dreifach verglaste Fenster bauphysikalisch und wirtschaftlich sinnvoll?
 - Welche Anforderungen ergeben sich aus Daemmung, Luftdichtheit und Lueftung?
-- Welche Dachdaemmung ist technisch sinnvoll?
+- Lohnt eher **Aufdopplung oberste Geschossdecke** (10 cm vorhanden) statt voller Dachdämmung?
+- Ist eine Kern-/Einblasdämmung bei diffusionsoffenem Holzspanbeton bauphysikalisch unbedenklich?
 
 ## Haustechnik
 

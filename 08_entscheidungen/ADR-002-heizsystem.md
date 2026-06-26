@@ -1,7 +1,9 @@
-# ADR-002: Heizsystem
-
-Status: ZU PRUEFEN  
-Datum: 2026-06-26
+---
+title: "ADR-002: Heizsystem"
+status: "ZU PRÜFEN"
+datum: 2026-06-26
+verantwortlich: ""
+---
 
 ## Fragestellung
 

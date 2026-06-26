@@ -1,0 +1,71 @@
+---
+import { getCollection } from "astro:content";
+import { SECTIONS, sectionFor } from "../lib/sections";
+
+const { current } = Astro.props as { current?: string };
+
+const docs = await getCollection("docs");
+const counts = new Map<string, number>();
+for (const d of docs) {
+  const key = sectionFor(d.id).key;
+  counts.set(key, (counts.get(key) ?? 0) + 1);
+}
+
+const topLinks = [
+  { href: "/", label: "Dashboard", icon: "📊", id: "dashboard" },
+  { href: "/kosten", label: "Kosten", icon: "💶", id: "kosten" },
+  { href: "/aufgaben", label: "Aufgaben & Fragen", icon: "🗒️", id: "aufgaben" },
+  { href: "/medien", label: "Pläne & Medien", icon: "🖼️", id: "medien" },
+  { href: "/suche", label: "Suche", icon: "🔍", id: "suche" },
+  { href: "/admin/index.html", label: "Pflegen (CMS)", icon: "✏️", id: "cms" },
+];
+
+const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) ?? 0) > 0).sort(
+  (a, b) => a.order - b.order,
+);
+---
+
+<aside class="sidebar">
+  <a class="brand" href="/">
+    <span class="logo">🏡</span>
+    <div>
+      <h1>Ferienhaus Fürstenau</h1>
+      <small>Sanierungszentrale</small>
+    </div>
+  </a>
+
+  <div class="searchbox">
+    <input type="search" id="quicksearch" placeholder="Schnellsuche…" autocomplete="off" />
+  </div>
+
+  <nav class="nav" aria-label="Hauptnavigation">
+    {
+      topLinks.map((l) => (
+        <a href={l.href} class={current === l.id ? "active" : ""}>
+          <span class="ico">{l.icon}</span>
+          <span>{l.label}</span>
+        </a>
+      ))
+    }
+
+    <div class="group-label">Bereiche</div>
+    {
+      bereiche.map((s) => (
+        <a href={`/bereich/${s.key}`} class={current === s.key ? "active" : ""}>
+          <span class="ico">{s.icon}</span>
+          <span>{s.label}</span>
+          <span class="count">{counts.get(s.key)}</span>
+        </a>
+      ))
+    }
+  </nav>
+</aside>
+
+<script>
+  const input = document.getElementById("quicksearch") as HTMLInputElement | null;
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && input.value.trim()) {
+      window.location.href = "/suche?q=" + encodeURIComponent(input.value.trim());
+    }
+  });
+</script>

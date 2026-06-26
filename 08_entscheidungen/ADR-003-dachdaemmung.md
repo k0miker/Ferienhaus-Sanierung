@@ -1,7 +1,9 @@
-# ADR-003: Dachdaemmung
-
-Status: ZU PRUEFEN  
-Datum: 2026-06-26
+---
+title: "ADR-003: Dachdaemmung"
+status: "ZU PRÜFEN"
+datum: 2026-06-26
+verantwortlich: ""
+---
 
 ## Fragestellung
 

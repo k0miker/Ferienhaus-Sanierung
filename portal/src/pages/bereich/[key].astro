@@ -1,0 +1,43 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { SECTIONS, sectionFor, titleFor, excerptFor } from "../../lib/sections";
+import { statusClass } from "../../lib/status";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return SECTIONS.filter((s) => s.key !== "_root")
+    .map((s) => ({
+      section: s,
+      docs: docs
+        .filter((d) => sectionFor(d.id).key === s.key)
+        .sort((a, b) => titleFor(a).localeCompare(titleFor(b), "de")),
+    }))
+    .filter((g) => g.docs.length > 0)
+    .map((g) => ({ params: { key: g.section.key }, props: g }));
+}
+
+const { section, docs } = Astro.props;
+---
+
+<Base title={section.label} current={section.key} crumb={section.label}>
+  <div class="page-head">
+    <p class="eyebrow">Bereich</p>
+    <h2>{section.icon} {section.label}</h2>
+    <p class="lead">{docs.length} Dokument{docs.length === 1 ? "" : "e"} in diesem Bereich.</p>
+  </div>
+
+  <div class="grid cols-2">
+    {
+      docs.map((d) => (
+        <a class="card link" href={`/docs/${d.id}`}>
+          <h3 style="display:flex; justify-content:space-between; gap:10px; align-items:start">
+            <span>{titleFor(d)}</span>
+            {d.data.status && <span class={`badge ${statusClass(d.data.status)}`}>{d.data.status}</span>}
+          </h3>
+          <p class="meta">{excerptFor(d) || "—"}</p>
+        </a>
+      ))
+    }
+  </div>
+</Base>

@@ -1,0 +1,165 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { titleFor, sectionFor, SECTIONS } from "../lib/sections";
+import { tableUnderHeading, ampelOf } from "../lib/mdtable";
+import { statusClass, cleanStatus } from "../lib/status";
+
+const docs = await getCollection("docs");
+// IDs werden vom Glob-Loader kleingeschrieben → case-insensitives Lookup.
+const byId = new Map(docs.map((d) => [d.id.toLowerCase(), d]));
+const status = byId.get("projektstatus");
+const body = status?.body ?? "";
+
+// Gesamtstatus-Zeile (Blockquote am Anfang)
+const stand = body.match(/\*\*Stand:\*\*\s*([0-9-]+)/)?.[1];
+const gesamt = body.match(/\*\*Gesamtstatus:\*\*\s*(.+)/)?.[1]?.replace(/[🟡🟢🔴]/g, "").trim();
+
+// Projektampel (§15)
+const ampel = tableUnderHeading(body, /Projektampel/i);
+const ampelRows = (ampel?.rows ?? []).map((r) => ({
+  bereich: r[0],
+  farbe: ampelOf(r[1] ?? ""),
+  grund: r[2] ?? "",
+}));
+const counts = { rot: 0, gelb: 0, gruen: 0 };
+for (const r of ampelRows) if (r.farbe) counts[r.farbe]++;
+
+// Maßnahmenstatus (§6)
+const massn = tableUnderHeading(body, /Bauteile und Maßnahmenstatus|Maßnahmenstatus/i);
+const massnRows = (massn?.rows ?? []).map((r) => ({
+  bereich: r[0],
+  status: cleanStatus(r[1] ?? ""),
+  next: r[2] ?? "",
+}));
+
+// Kritische Blocker (§12 nummerierte Liste)
+const blockerMatch = body.match(/##\s*\d+\.\s*Kritische Blocker\s*\n([\s\S]*?)(?=\n##\s)/i);
+const blocker = (blockerMatch?.[1] ?? "")
+  .split("\n")
+  .map((l) => l.match(/^\s*\d+\.\s+(.*)$/)?.[1]?.trim())
+  .filter((x): x is string => Boolean(x))
+  .slice(0, 6);
+
+// Schnellzugriff auf Schlüsseldokumente
+const quick = [
+  { id: "projektstatus", icon: "📋" },
+  { id: "00_projekt/offene-fragen", icon: "❓" },
+  { id: "00_projekt/massnahmenplan", icon: "🧩" },
+  { id: "06_kosten/kostenplan", icon: "💶" },
+  { id: "09_bauablauf/backlog", icon: "🗒️" },
+  { id: "08_entscheidungen/adr-001-fenster", icon: "✅" },
+].filter((q) => byId.has(q.id));
+
+const facts = [
+  { label: "Baujahr", value: "1978" },
+  { label: "Budgetrahmen", value: "60–100 T€" },
+  { label: "Energiebedarf", value: "287,8 kWh/m²a" },
+  { label: "Dokumente", value: String(docs.length) },
+];
+---
+
+<Base title="Dashboard" current="dashboard">
+  <div class="page-head">
+    <p class="eyebrow">Sanierungsprojekt · Stand {stand ?? "—"}</p>
+    <h2>Übersicht</h2>
+    {gesamt && <p class="lead">{gesamt}</p>}
+  </div>
+
+  <div class="grid cols-4" style="margin-bottom:22px">
+    {
+      facts.map((f) => (
+        <div class="card stat">
+          <span class="label">{f.label}</span>
+          <span class="value">{f.value}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="grid cols-2">
+    <!-- Projektampel -->
+    <div class="card">
+      <h3>Projektampel
+        <span style="float:right; font-weight:400; font-size:13px" class="muted">
+          <span class="ampel rot"></span> {counts.rot}
+          &nbsp;<span class="ampel gelb"></span> {counts.gelb}
+          &nbsp;<span class="ampel gruen"></span> {counts.gruen}
+        </span>
+      </h3>
+      {
+        ampelRows.length ? (
+          <div style="display:flex; flex-direction:column; gap:8px">
+            {ampelRows.map((r) => (
+              <div style="display:flex; align-items:center; gap:10px; font-size:14px">
+                <span class={`ampel ${r.farbe ?? ""}`} title={r.grund}></span>
+                <b style="min-width:150px">{r.bereich}</b>
+                <span class="muted" style="font-size:13px">{r.grund}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p class="empty">Keine Ampel-Tabelle gefunden.</p>
+        )
+      }
+    </div>
+
+    <!-- Kritische Blocker -->
+    <div class="card">
+      <h3>🚧 Kritische Blocker</h3>
+      {
+        blocker.length ? (
+          <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; font-size:14px">
+            {blocker.map((b) => <li>{b}</li>)}
+          </ol>
+        ) : (
+          <p class="empty">Keine Blocker gelistet.</p>
+        )
+      }
+      <div class="btn-row">
+        <a class="btn" href="/docs/projektstatus">Voller Projektstatus →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maßnahmenstatus -->
+  <h3 style="margin:30px 0 12px">Maßnahmen &amp; Gewerke</h3>
+  <div class="card" style="padding:0; overflow:hidden">
+    {
+      massnRows.length ? (
+        <table class="prose" style="margin:0; width:100%">
+          <thead>
+            <tr><th>Bereich</th><th>Status</th><th>Nächster Schritt</th></tr>
+          </thead>
+          <tbody>
+            {massnRows.map((r) => (
+              <tr>
+                <td><b>{r.bereich}</b></td>
+                <td><span class={`badge ${statusClass(r.status)}`}>{r.status}</span></td>
+                <td class="muted">{r.next}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p class="empty">Keine Maßnahmentabelle gefunden.</p>
+      )
+    }
+  </div>
+
+  <!-- Schnellzugriff -->
+  <h3 style="margin:30px 0 12px">Schnellzugriff</h3>
+  <div class="grid cols-3">
+    {
+      quick.map((q) => {
+        const d = byId.get(q.id)!;
+        return (
+          <a class="card link" href={`/docs/${d.id}`}>
+            <h3>{q.icon} {titleFor(d)}</h3>
+            <span class="meta">{sectionFor(d.id).label}</span>
+          </a>
+        );
+      })
+    }
+  </div>
+</Base>

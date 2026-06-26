@@ -1,0 +1,82 @@
+# Decap CMS – Konfiguration
+# Lokal bearbeiten:  Terminal 1: cd portal && npm run dev
+#                    Terminal 2: cd portal && npm run cms   (startet decap-server im Repo-Root)
+# Dann http://localhost:4321/admin/ öffnen (lokaler Modus, kein Login nötig).
+# Pfade sind relativ zum Repo-Root (wo decap-server läuft).
+
+backend:
+  name: git-gateway
+  branch: main
+
+# Lokaler Schreib-Modus über decap-server (Proxy auf Port 8081)
+local_backend: true
+
+media_folder: "01_bestand/fotos"
+public_folder: "/01_bestand/fotos"
+
+locale: "de"
+
+collections:
+  - name: "kosten"
+    label: "Kosten"
+    label_singular: "Kostenposition"
+    description: "Einzelne Kostenpositionen. Summen & Budget-Ampel im Portal entstehen automatisch."
+    folder: "06_kosten/positionen"
+    create: true
+    identifier_field: "titel"
+    summary: "{{titel}} — {{betrag}} € ({{gruppe}})"
+    sortable_fields: ["betrag", "datum", "titel"]
+    fields:
+      - { label: "Titel", name: "titel", widget: "string" }
+      - label: "Bereich"
+        name: "bereich"
+        widget: "select"
+        default: "Sonstiges"
+        options: ["Projekt", "Bestand", "Gebäudehülle", "Haustechnik", "Innenausbau", "Förderung", "Sonstiges"]
+      - label: "Gruppe (AGENTS §13)"
+        name: "gruppe"
+        widget: "select"
+        options:
+          - "geschätzt"
+          - "Angebot vorhanden"
+          - "beauftragt"
+          - "bezahlt"
+          - "Reserve"
+          - "Förderung beantragt"
+          - "Förderung bewilligt"
+          - "Förderung ausgezahlt"
+      - { label: "Betrag (€)", name: "betrag", widget: "number", value_type: "float", min: 0, step: 1 }
+      - { label: "Brutto?", name: "brutto", widget: "boolean", default: true }
+      - label: "Status (optional)"
+        name: "status"
+        widget: "select"
+        required: false
+        options:
+          ["IDEE", "ZU PRÜFEN", "DATEN FEHLEN", "ANGEBOT ANGEFRAGT", "ANGEBOT VORHANDEN",
+           "ENTSCHEIDUNG OFFEN", "ENTSCHIEDEN", "FÖRDERUNG ZU KLÄREN", "BEAUFTRAGT",
+           "IN AUSFÜHRUNG", "AUSGEFÜHRT", "ABGENOMMEN", "MANGEL OFFEN", "ERLEDIGT", "VERWORFEN"]
+      - { label: "Datum", name: "datum", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: "Quelle / Beleg", name: "quelle", widget: "string", required: false }
+      - { label: "Notiz", name: "notiz", widget: "text", required: false }
+      - { label: "Beschreibung (optional)", name: "body", widget: "markdown", required: false }
+
+  - name: "entscheidungen"
+    label: "Entscheidungen (ADR)"
+    label_singular: "Entscheidung"
+    description: "Architektur-/Projektentscheidungen nach AGENTS §10."
+    folder: "08_entscheidungen"
+    create: true
+    identifier_field: "title"
+    extension: "md"
+    format: "frontmatter"
+    summary: "{{title}} — {{status}}"
+    fields:
+      - { label: "Titel", name: "title", widget: "string", hint: "z.B. ADR-004: Warmwasser" }
+      - label: "Status (AGENTS §10)"
+        name: "status"
+        widget: "select"
+        default: "ZU PRÜFEN"
+        options: ["IDEE", "ZU PRÜFEN", "ENTSCHEIDEN", "ENTSCHIEDEN", "VERWORFEN", "ERSETZT"]
+      - { label: "Datum", name: "datum", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Verantwortlich", name: "verantwortlich", widget: "string", required: false }
+      - { label: "Inhalt", name: "body", widget: "markdown" }

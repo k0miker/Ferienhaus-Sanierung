@@ -9,6 +9,12 @@ Stand: 2026-06-26
 - Planfoto fuer Web-Viewer: `grundriss-ausschnitt-2026-06-26-214844.png`
 - Quelle: `26 388 014 Grundrisse.pdf` und vorhandene Screenshots im Ordner `01_bestand/grundrisse/`
 
+## Planungstool
+
+Die Grundrissplanung wurde mit RemPlanner erstellt: <https://remplanner.com/planner/>
+
+Dort koennen Raumaufteilung, Masse und Varianten weiter bearbeitet werden. Abgelesene Flaechen und Masse aus dem Tool gelten als [ABGELESEN], bis sie vor Ort geprueft sind.
+
 ## Empfohlene Arbeitsweise
 
 Die Webansicht verwendet jetzt `Grundriss.png` als fuehrende Arbeitsansicht, weil diese Datei sauber nachgebaut, gerade ausgerichtet und gut bemaßt ist.

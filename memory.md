@@ -47,7 +47,8 @@ Die Sanierung soll:
 |---|---|
 | Objekt | Ferien-/Wochenendhaus |
 | Adresse | **[ANGABE] Wilhelm-Busch-Straße 7, Fürstenau** |
-| Baujahr | **[ANGABE] 1978** |
+| Baujahr | **[BELEGT] 1978** (VARIODOMO-Wärmeschutznachweis, Bremen 13.6.1978) |
+| Bausystem | **[BELEGT] VARIODOMO „Das Haus zum Selbstbauen"** – Holzspan-Schalungsstein (Durisol-/Velox-artig) |
 | Nutzung heute / künftig | **[ANGABE] ganzjährige Eigennutzung geplant** |
 | Baurechtliche Einordnung | **[ANGABE] offiziell Ferien-/Wochenendhaus; dauerhafte Nutzung beziehungsweise Erstwohnsitz offenbar nicht eindeutig genehmigt, wird nach bisheriger Aussage durch die Stadt geduldet** |
 | Grundstücksrecht | **[BELEGT/noch gegen Urkunde prüfen] Erbbaurecht; erworben wurde das mit einem Wochenendhaus bebaute Erbbaurecht, nicht das Grundstück selbst** |
@@ -85,9 +86,10 @@ Die Förderfähigkeit als Wohngebäude darf nicht vorausgesetzt werden. Vor för
 
 ### 4.2 Außenwände und Fassade
 
-- **[ANGABE]** Die Außenwände sind einschließlich Klinker ungefähr **44 cm stark**.
-- **[ANNAHME]** Aufgrund der Wandstärke könnte eine zweischalige Konstruktion mit Hohlraum vorhanden sein.
-- **[OFFEN]** Tatsächlicher Wandaufbau, Hohlschichtdicke, Mörtelreste, Feuchte, Schlagregenbelastung und Eignung für eine Kerndämmung sind nicht untersucht.
+- **[BELEGT]** Kernwand laut Bauunterlagen: **24 cm Holzspan-Schalungsstein, massiv mit Kiesbeton verfüllt** (1,5 Innenputz / 4 Holzspanbeton / 16 Füllbeton / 4 Holzspanbeton / 2 Außenputz), **U ≈ 0,992 W/(m²·K)**, Gesamtdicke ca. 27,5 cm. Quelle: `01_bestand/bauunterlagen/bautechnischer-nachweis-1978-auswertung.md`.
+- **[ANGABE]** Außenwände einschließlich Klinker ungefähr **44 cm stark**.
+- **[WIDERSPRUCH]** 44 cm (inkl. Klinker) vs. 27,5 cm belegte Kernwand → spricht für **Klinker-Vorsatzschale + mögliche Luftschicht**. Ein Hohlraum für Einblasdämmung läge zwischen Kernwand und Klinker, **nicht** im Holzspanstein. Nur per Endoskopie zu bestätigen.
+- **[OFFEN]** Existenz/Dicke/Sauberkeit der Luftschicht, Feuchte/Schlagregen, Eignung für Kerndämmung. Holzspanbeton ist diffusionsoffen/feuchteempfindlich → Bauphysikprüfung vor jeder Dämmung.
 - **[ANGABE]** Eine Einblas-/Kerndämmung wird ernsthaft erwogen.
 
 Vor einer Entscheidung sind mindestens erforderlich:
@@ -102,6 +104,8 @@ Vor einer Entscheidung sind mindestens erforderlich:
 
 ### 4.3 Dach
 
+- **[BELEGT]** Oberste Geschossdecke (zum DG) hat bereits **10 cm Faserdämmung** + Gipskarton, **U ≈ 0,381**. Günstigster Hebel: Aufdopplung auf dem Dachboden. Quelle: Bauunterlagen-Auswertung 1978.
+- **[WIDERSPRUCH]** Grundriss zeigt ein **OG mit Räumen**, Bauunterlage spricht von „nicht ausgebautem Dachgeschoss" → Nutzung (Wohnraum/Speicher) klären; entscheidet Dämm- und Heizkonzept.
 - **[ANGABE]** Eine energetische Sanierung des Dachs ist geplant.
 - **[ANGABE]** Ein sogenanntes **Wagner-Dach** beziehungsweise eine entsprechende Einblaslösung wird erwogen.
 - **[OFFEN]** Dachneigung, Sparrenmaße, Unterspann-/Unterdeckbahn, Hinterlüftung, Innenbekleidung, Luftdichtheit, Holzfeuchte, Zustand der Ziegel und genaue Schichtenfolge sind nicht dokumentiert.

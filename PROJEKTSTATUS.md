@@ -1,6 +1,6 @@
 # Projektstatus – Ferienhaus Fürstenau
 
-> **Stand:** 2026-06-26  
+> **Stand:** 2026-06-27  
 > **Projektphase:** Bestandsaufnahme, Grundsatzentscheidungen und Vorbereitung der Sanierungsplanung  
 > **Gesamtstatus:** 🟡 Planung läuft; wesentliche Bestands-, Rechts-, Förder- und Technikfragen sind noch offen.
 
@@ -30,7 +30,7 @@ Diese Richtung ist **vorläufig**. Es wurden noch keine abschließenden Systemen
 |---|---|
 | Objekt | [ANGABE] Ferien-/Wochenendhaus |
 | Adresse | [ANGABE] Wilhelm-Busch-Straße 7, Fürstenau |
-| Baujahr | [ANGABE] 1978 |
+| Baujahr | [BELEGT] 1978 (VARIODOMO-Wärmeschutznachweis, Bremen 13.6.1978) |
 | Nutzung | [ANGABE] ganzjährige Eigennutzung geplant |
 | Recht | [ANGABE/BELEGT zu prüfen] Erbbaurecht, Flur 4, Flurstück 353 |
 | Restlaufzeit | [ANGABE] ca. 53 Jahre |
@@ -359,6 +359,23 @@ Für die PV erfassen:
 ---
 
 ## 16. Letzte Aktualisierung
+
+**2026-06-27**
+
+Original-Bauunterlagen (VARIODOMO-Nachweis 1978) ausgewertet – Auswertung in
+`01_bestand/bauunterlagen/bautechnischer-nachweis-1978-auswertung.md`:
+
+- Baujahr 1978 jetzt **[BELEGT]**; Bausystem VARIODOMO (Holzspan-Schalungsstein).
+- Belegte U-Werte: Außenwand-Kernwand 0,992 · oberste Geschossdecke 0,381 (bereits 10 cm
+  Dämmung!) · Boden 0,971 · Fenster 3,0.
+- **[WIDERSPRUCH] Außenwand:** Kernwand massiv 27,5 cm – die 44 cm inkl. Klinker deuten auf
+  Klinker-Vorsatzschale + mögliche Luftschicht. Einblasdämmung nur nach Endoskopie.
+- **[WIDERSPRUCH] Geschosse:** Grundriss zeigt OG mit Räumen, Bauunterlage „nicht ausgebautes
+  DG" – Nutzung (Wohnraum/Speicher) klären; betrifft Dämm- und Split-Konzept.
+- Sanierungsscope ergänzt: Böden (Klebevinyl, Bad gefliest, evtl. E-FBH), Tapeten,
+  Deckenvertäfelung/Rigips. Neue Datei `04_innenausbau/waende-decken-oberflaechen.md`.
+- Handwerkerkontakte recherchiert und eingetragen (Geske, Santel, Haverkamp + Gewerke).
+- Vorläufiges Split-Aufstellungskonzept dokumentiert (Heizlast steht noch aus).
 
 **2026-06-26**
 

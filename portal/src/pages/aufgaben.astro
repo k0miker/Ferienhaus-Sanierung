@@ -1,0 +1,146 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { parseChecklist, parseTables } from "../lib/mdtable";
+import { statusClass, cleanStatus } from "../lib/status";
+import { titleFor } from "../lib/sections";
+
+const docs = await getCollection("docs");
+const byId = new Map(docs.map((d) => [d.id, d]));
+
+// Backlog
+const backlog = byId.get("09_bauablauf/backlog");
+const tasks = backlog ? parseChecklist(backlog.body ?? "") : [];
+const offen = tasks.filter((t) => !t.done);
+const erledigt = tasks.filter((t) => t.done);
+
+// Offene Fragen – nach H2 gruppieren
+const fragenDoc = byId.get("00_projekt/offene-fragen");
+const fragenGruppen: { titel: string; fragen: string[] }[] = [];
+if (fragenDoc) {
+  let cur: { titel: string; fragen: string[] } | null = null;
+  for (const line of (fragenDoc.body ?? "").split("\n")) {
+    const h = line.match(/^##\s+(.*)$/);
+    const li = line.match(/^[-*]\s+(.*)$/);
+    if (h) {
+      cur = { titel: h[1].trim(), fragen: [] };
+      fragenGruppen.push(cur);
+    } else if (li && cur) {
+      cur.fragen.push(li[1].trim());
+    }
+  }
+}
+const fragenAnzahl = fragenGruppen.reduce((n, g) => n + g.fragen.length, 0);
+
+// Entscheidungslog
+const logDoc = byId.get("00_projekt/entscheidungslog");
+const logTable = logDoc ? parseTables(logDoc.body ?? "")[0] : null;
+
+// ADRs
+const adrs = docs
+  .filter((d) => d.id.startsWith("08_entscheidungen/"))
+  .map((d) => ({
+    id: d.id,
+    titel: titleFor(d),
+    status: (d.data.status as string | undefined) ?? "—",
+  }))
+  .sort((a, b) => a.id.localeCompare(b.id));
+---
+
+<Base title="Aufgaben & Fragen" current="aufgaben" crumb="Aufgaben & Fragen">
+  <div class="page-head">
+    <p class="eyebrow">Backlog · Offene Fragen · Entscheidungen</p>
+    <h2>Aufgaben &amp; Fragen</h2>
+    <p class="lead">{offen.length} offene Aufgaben · {fragenAnzahl} offene Fragen · {adrs.length} ADRs</p>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>🗒️ Backlog – offen <span class="count">{offen.length}</span></h3>
+      {
+        offen.length ? (
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px">
+            {offen.map((t) => (
+              <li style="display:flex; gap:9px; align-items:start; font-size:14px">
+                <span>☐</span><span>{t.text}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="empty">Keine offenen Aufgaben.</p>
+        )
+      }
+      {
+        erledigt.length > 0 && (
+          <details style="margin-top:14px">
+            <summary class="muted" style="cursor:pointer; font-size:13px">
+              {erledigt.length} erledigt
+            </summary>
+            <ul style="list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px">
+              {erledigt.map((t) => (
+                <li class="muted" style="font-size:13px; text-decoration:line-through">
+                  ☑ {t.text}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )
+      }
+      <div class="btn-row"><a class="btn" href="/docs/09_bauablauf/backlog">Backlog öffnen →</a></div>
+    </div>
+
+    <div class="card">
+      <h3>❓ Offene Fragen <span class="count">{fragenAnzahl}</span></h3>
+      {
+        fragenGruppen.map((g) => (
+          <div style="margin-bottom:12px">
+            <b style="font-size:13px; color:var(--accent)">{g.titel}</b>
+            <ul style="margin:4px 0 0; padding-left:18px; font-size:14px; display:flex; flex-direction:column; gap:4px">
+              {g.fragen.map((f) => <li>{f}</li>)}
+            </ul>
+          </div>
+        ))
+      }
+      <div class="btn-row"><a class="btn" href="/docs/00_projekt/offene-fragen">Alle Fragen →</a></div>
+    </div>
+  </div>
+
+  <h3 style="margin:30px 0 12px; display:flex; justify-content:space-between; align-items:center">
+    <span>✅ Entscheidungen (ADRs)</span>
+    <a class="btn primary" style="font-size:13px" href="/admin/index.html#/collections/entscheidungen/new">+ Entscheidung</a>
+  </h3>
+  <div class="grid cols-3" style="margin-bottom:24px">
+    {
+      adrs.map((a) => (
+        <a class="card link" href={`/docs/${a.id}`}>
+          <h3 style="font-size:14px">{a.titel}</h3>
+          <span class={`badge ${statusClass(a.status)}`}>{a.status}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  {
+    logTable && (
+      <>
+        <h3 style="margin:24px 0 12px">📜 Entscheidungslog</h3>
+        <div class="card" style="padding:0; overflow:hidden">
+          <table class="prose" style="margin:0; width:100%">
+            <thead>
+              <tr>{logTable.headers.map((h) => <th>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {logTable.rows.map((row) => (
+                <tr>
+                  {row.map((c, i) => (
+                    <td>{i === 2 ? <span class={`badge ${statusClass(c)}`}>{cleanStatus(c)}</span> : cleanStatus(c)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )
+  }
+</Base>

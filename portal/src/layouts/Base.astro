@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import Sidebar from "../components/Sidebar.astro";
+
+interface Props {
+  title: string;
+  current?: string;
+  crumb?: string;
+}
+const { title, current, crumb } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{title} · Ferienhaus Fürstenau</title>
+  </head>
+  <body>
+    <div class="layout">
+      <Sidebar current={current} />
+      <div class="main">
+        <header class="topbar">
+          <div class="crumbs">
+            <a href="/">Sanierungszentrale</a>
+            {crumb && <> / <b>{crumb}</b></>}
+          </div>
+          <div class="crumbs">📍 Wilhelm-Busch-Str. 7, Fürstenau</div>
+        </header>
+        <main class="content">
+          <slot />
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
