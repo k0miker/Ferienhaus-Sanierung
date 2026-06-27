@@ -352,8 +352,8 @@ Für die PV erfassen:
 | Fenster | 🟡 | Austausch geplant, Maße und Angebote fehlen |
 | Heizung | 🟢 | Split-WP entschieden (ADR-002), Heizlast und Angebote fehlen noch |
 | Warmwasser | 🔴 | Bestand und Zielsystem offen |
-| Elektro | 🔴 | Zustand und Leistungsreserve unbekannt |
-| PV | 🟡 | Anlage vorhanden, Kerndaten widersprüchlich |
+| Elektro | 🔴 | Zustand und Leistungsreserve unbekannt; Speicher-Infrastruktur vorbereiten |
+| PV | 🟡 | Anlage vorhanden, Kerndaten widersprüchlich; Speicher (10 kWh) später geplant |
 | Budget | 🟡 | Rahmen vorhanden, belastbarer Kostenplan fehlt |
 | Bauablauf | 🟡 | grobe Reihenfolge vorhanden, Detailplanung fehlt |
 
