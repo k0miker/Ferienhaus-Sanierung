@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1216">
+<title>Aufmaß-Checklisten – Ferienhaus Fürstenau</title>
+<style>
+:root {
+  --bg: #0f1216; --bg2: #151a21; --panel: #1a212b; --border: #2a3441;
+  --text: #e7edf3; --muted: #93a1b1; --accent: #5aa9e6;
+  --ok: #6cc28a; --warn: #f5c451; --bad: #ef6a6a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.5; padding: 0 0 80px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Header */
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(15,18,22,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+}
+.header h1 { font-size: 17px; font-weight: 700; }
+.header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Progress */
+.progress-wrap {
+  position: sticky; top: 62px; z-index: 9;
+  background: rgba(15,18,22,.95); backdrop-filter: blur(8px);
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.progress-bar {
+  height: 8px; border-radius: 6px; background: var(--panel);
+  overflow: hidden; margin-bottom: 4px;
+}
+.progress-fill {
+  height: 100%; border-radius: 6px; background: var(--accent);
+  transition: width .3s ease;
+}
+.progress-text { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+
+/* Navigation */
+.nav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; -webkit-overflow-scrolling: touch; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--border);
+  text-decoration: none; white-space: nowrap;
+  transition: all .15s;
+}
+.nav a.active, .nav a:active { background: var(--accent); color: #07111b; border-color: var(--accent); }
+
+/* Sections */
+.section {
+  margin: 16px 12px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden;
+}
+.section-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+}
+.section-head h2 { font-size: 15px; font-weight: 700; }
+.section-head .badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; white-space: nowrap;
+}
+.badge-warn { background: #352b14; color: #ffe6a8; border: 1px solid #6b5a23; }
+.badge-ok { background: #163524; color: #bdf0cf; border: 1px solid #2e6b46; }
+.badge-info { background: #16263a; color: #c4e2ff; border: 1px solid #2e4d6b; }
+.section-body { display: none; border-top: 1px solid var(--border); }
+.section.open .section-body { display: block; }
+.section-head .arrow { transition: transform .2s; font-size: 12px; color: var(--muted); margin-left: 8px; }
+.section.open .section-head .arrow { transform: rotate(90deg); }
+.section-progress {
+  height: 4px; background: var(--bg); margin: 0;
+}
+.section-progress-fill { height: 100%; background: var(--accent); transition: width .3s; }
+
+/* Items */
+.item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 16px; border-bottom: 1px solid rgba(42,52,65,.5);
+  font-size: 14px; cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  transition: background .1s;
+}
+.item:active { background: rgba(90,169,230,.08); }
+.item:last-child { border-bottom: none; }
+.item.done { color: var(--muted); }
+.item.done .item-text { text-decoration: line-through; }
+.item input[type=checkbox] {
+  appearance: none; -webkit-appearance: none;
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: 2px solid var(--border); border-radius: 6px;
+  background: var(--bg); cursor: pointer;
+  display: grid; place-items: center;
+  margin-top: 1px; transition: all .15s;
+}
+.item input[type=checkbox]:checked {
+  background: var(--accent); border-color: var(--accent);
+}
+.item input[type=checkbox]:checked::after {
+  content: "✓"; color: #07111b; font-size: 14px; font-weight: 800;
+}
+.item-text { flex: 1; }
+
+/* Note input */
+.note-input {
+  width: 100%; margin-top: 6px; padding: 6px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 13px;
+  font-family: inherit;
+}
+.note-input::placeholder { color: var(--muted); }
+
+/* Footer */
+.footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(15,18,22,.95); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 10px 16px; display: flex; gap: 10px;
+}
+.footer button {
+  flex: 1; padding: 10px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text); cursor: pointer;
+}
+.footer .btn-reset { color: var(--bad); border-color: rgba(239,106,106,.3); }
+.footer .btn-expand { color: var(--accent); border-color: rgba(90,169,230,.3); }
+
+@media (min-width: 600px) {
+  body { max-width: 600px; margin: 0 auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Aufmaß-Checklisten</h1>
+  <div class="sub">Ferienhaus Fürstenau · Wilhelm-Busch-Str. 7</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="pbar"></div></div>
+  <div class="progress-text"><span id="ptext">0 / 0</span><span id="ppct">0 %</span></div>
+</div>
+
+<nav class="nav" id="nav"></nav>
+<div id="app"></div>
+
+<div class="footer">
+  <button class="btn-expand" onclick="toggleAll()">Alle auf/zuklappen</button>
+  <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+</div>
+
+<script>
+const DATA = [
+  { id:"raum", icon:"📏", titel:"Raumweises Aufmaß", items:[
+    "Wohnzimmer: Länge (m)",
+    "Wohnzimmer: Breite (m)",
+    "Wohnzimmer: Lichte Höhe (m)",
+    "Wohnzimmer: Außenwandfläche(n) + Himmelsrichtung",
+    "Wohnzimmer: Fenster – Anzahl und Maße",
+    "Wohnzimmer: Türen – Anzahl und Maße",
+    "Wohnzimmer: Bodenbelag aktuell",
+    "Wohnzimmer: Decke aktuell",
+    "Wohnzimmer: Wände aktuell",
+    "Wohnzimmer: Vorhandene Wärmequelle",
+    "Wohnzimmer: Steckdosen/Schalter (Anzahl)",
+    "Wohnzimmer: Fotos gemacht",
+    "Küche: Länge (m)",
+    "Küche: Breite (m)",
+    "Küche: Lichte Höhe (m)",
+    "Küche: Außenwandfläche(n) + Himmelsrichtung",
+    "Küche: Fenster – Anzahl und Maße",
+    "Küche: Türen – Anzahl und Maße",
+    "Küche: Bodenbelag aktuell",
+    "Küche: Wasseranschlüsse (Lage, Zustand)",
+    "Küche: Steckdosen/Schalter (Anzahl)",
+    "Küche: Fotos gemacht",
+    "Bad: Länge (m)",
+    "Bad: Breite (m)",
+    "Bad: Lichte Höhe (m)",
+    "Bad: Fenster – Anzahl und Maße",
+    "Bad: Sanitärobjekte (WC, Waschbecken, Dusche/Wanne)",
+    "Bad: Warmwasserbereitung (Typ)",
+    "Bad: Wandbelag (Fliesen bis Höhe)",
+    "Bad: Abwasseranschlüsse (Lage)",
+    "Bad: Lüftung (Fenster/Abluft)",
+    "Bad: Feuchte/Schäden",
+    "Bad: Fotos gemacht",
+    "Flur: Länge (m)",
+    "Flur: Breite (m)",
+    "Flur: Lichte Höhe (m)",
+    "Flur: Eingangstür – Maß und Material",
+    "Flur: Treppe zum DG vorhanden? Maße?",
+    "Flur: Zählerkasten/Sicherungskasten hier?",
+    "Flur: Fotos gemacht",
+    "DG Raum 1: Nutzung (Wohnraum/Speicher)",
+    "DG Raum 1: Länge (m)",
+    "DG Raum 1: Breite (m)",
+    "DG Raum 1: Höhe Mitte (m)",
+    "DG Raum 1: Höhe Traufe/Kniestock (m)",
+    "DG Raum 1: Dachschräge vorhanden?",
+    "DG Raum 1: Fenster/Dachfenster",
+    "DG Raum 1: Bodenbelag + Decke aktuell",
+    "DG Raum 1: Wärmequelle",
+    "DG Raum 1: Schäden/Feuchte",
+    "DG Raum 1: Fotos gemacht",
+    "DG Raum 2: alle Punkte wie Raum 1",
+    "DG Raum 3: alle Punkte wie Raum 1",
+  ]},
+  { id:"fenster", icon:"🪟", titel:"Fensterinventar", items:[
+    "F01: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F01: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F01: Rollladen, Anschlusszustand",
+    "F02: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F02: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F03: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F03: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F04: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F04: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F05: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F05: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F06: Raum, Rohbaumaß B×H, Bestandsmaß, Brüstung",
+    "F06: Öffnungsart, Ausrichtung, Rahmen, Verglasung",
+    "F07–F12: restliche Fenster analog erfassen",
+  ]},
+  { id:"wand", icon:"🧱", titel:"Außenwand / Fassade", items:[
+    "Gesamtdicke an mehreren Stellen messen (cm)",
+    "Klinker-Vorsatzschale sichtbar?",
+    "Luftschicht zwischen Klinker und Kernwand vermutet?",
+    "Sichtbare Risse in der Fassade",
+    "Feuchteflecken außen",
+    "Feuchteflecken innen (welche Räume)",
+    "Sockelbereich: Zustand und Abdichtung",
+    "Mögliche Endoskopie-Stellen markiert (2–3 Seiten)",
+    "Foto Fassade Nord",
+    "Foto Fassade Ost",
+    "Foto Fassade Süd",
+    "Foto Fassade West",
+    "Foto Sockelbereich",
+    "Foto Laibung/Fensteranschluss (Detail)",
+  ]},
+  { id:"dach", icon:"🏠", titel:"Dach / Dachboden", items:[
+    "Dachform",
+    "Geschätzte Dachneigung (°)",
+    "Eindeckung (Beton-/Tondachstein, Alter)",
+    "Sichtbare Schäden an Ziegeln",
+    "Unterspann-/Unterdeckbahn vorhanden?",
+    "Hinterlüftung erkennbar?",
+    "Sparrenmaße (Breite × Höhe, Abstand)",
+    "Vorhandene Dämmung zwischen Sparren (cm)",
+    "Dämmung auf oberster Geschossdecke (cm)",
+    "Dampfbremse/Luftdichtung vorhanden?",
+    "Holzzustand (Sparren, Pfetten)",
+    "Feuchte-/Schimmelspuren",
+    "Traufdetail von innen sichtbar",
+    "PV-Kabel-Durchführungen dicht?",
+    "Foto Dachboden Übersicht",
+    "Foto Sparren/Pfetten",
+    "Foto Traufbereich",
+    "Foto First von innen",
+  ]},
+  { id:"pv", icon:"☀️", titel:"PV-Anlage", items:[
+    "Modulanzahl zählen",
+    "Modultyp (Typenschild fotografieren)",
+    "Modulleistung lt. Typenschild (Wp)",
+    "Wechselrichter: Hersteller und Modell",
+    "Wechselrichter: Seriennummer",
+    "Wechselrichter: Nennleistung (kW)",
+    "Wechselrichter: Display – aktuelle Leistung + Gesamtertrag",
+    "Standort Wechselrichter (Raum)",
+    "Einspeisezähler-Nummer",
+    "Bezugszähler-Nummer",
+    "Zweirichtungszähler?",
+    "Zählerstand Einspeisung",
+    "Zählerstand Bezug",
+    "Ausrichtung Module (Himmelsrichtung)",
+    "Neigung Module (°)",
+    "Sichtbare Schäden an Modulen/Kabeln",
+    "Foto Typenschild Module",
+    "Foto Wechselrichter + Display",
+    "Foto Zähler",
+    "Foto Dachbelegung gesamt",
+  ]},
+  { id:"elektro", icon:"⚡", titel:"Elektroinstallation", items:[
+    "Zählerkasten: Standort, Alter geschätzt",
+    "Anzahl Sicherungsautomaten",
+    "FI-Schutzschalter vorhanden? Anzahl?",
+    "Zuleitung (Querschnitt geschätzt)",
+    "Absicherung Hauptleitung (A)",
+    "Leitungstyp in der Wand (NYM/älteres Alu/…)",
+    "Steckdosen-Zustand stichprobenartig",
+    "Erdung/Potentialausgleich erkennbar?",
+    "Drehstrom vorhanden (für WP/DLE)?",
+    "Platz für zusätzliche Sicherungskreise?",
+    "Foto Zählerkasten offen",
+    "Foto Sicherungskasten offen",
+  ]},
+  { id:"heizung", icon:"🔥", titel:"Heizung / Warmwasser", items:[
+    "Holzofen: Hersteller, Typ, Leistung (kW)",
+    "Holzofen: Typenschild fotografiert",
+    "Holzofen: Rauchrohranschluss (Durchmesser)",
+    "Schornstein: Material, Zustand",
+    "Warmwasserbereitung: Gerät + Typ",
+    "Warmwasserbereitung: Leistung (kW), Alter",
+    "Weitere elektrische Heizgeräte",
+    "Schornsteinfeger-Plakette vorhanden? Datum?",
+    "Foto Holzofen + Typenschild",
+    "Foto Schornstein",
+    "Foto Warmwassergerät",
+  ]},
+  { id:"durchbruch", icon:"🔨", titel:"Wanddurchbruch", items:[
+    "Wand Küche/Wohnzimmer: Dicke (cm)",
+    "Wandmaterial (klopfen, ggf. Endoskopie später)",
+    "Gewünschte Öffnungsbreite (m)",
+    "Gewünschte Öffnungshöhe (m)",
+    "Leitungen in der Wand vermutet (Strom/Wasser/Abwasser)?",
+    "Auflager/Stützen erkennbar?",
+    "OG: Last auf dieser Wand?",
+    "Foto der Wand von Küchenseite",
+    "Foto der Wand von Wohnzimmerseite",
+  ]},
+  { id:"fotos", icon:"📷", titel:"Fotodokumentation", items:[
+    "Haus von vorne (Straßenseite)",
+    "Haus von hinten (Gartenseite)",
+    "Haus seitlich links",
+    "Haus seitlich rechts",
+    "Dach von außen (Überblick)",
+    "Eingangsbereich",
+    "Jeder Raum: 2–3 Perspektiven",
+    "Jedes Fenster von innen",
+    "Jedes Fenster von außen",
+    "Zähler und Sicherungskasten",
+    "Keller / Kriechkeller (falls vorhanden)",
+    "Dachboden",
+    "Schadstellen / Feuchte / Risse",
+    "Grundstück Übersicht",
+  ]},
+  { id:"pack", icon:"🎒", titel:"Packliste", items:[
+    "Zollstock / Laser-Entfernungsmesser",
+    "Smartphone (Fotos + Notizen)",
+    "Taschenlampe",
+    "Stift + Ausdruck Grundriss",
+    "Leiter (für Dachboden)",
+    "Feuchtemessgerät (falls vorhanden)",
+    "Steckdosentester",
+    "Grundrissplan als Ausdruck",
+  ]},
+];
+
+const STORAGE_KEY = "aufmass_v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) {}
+let notes = {};
+try { notes = JSON.parse(localStorage.getItem(STORAGE_KEY + "_notes")) || {}; } catch(e) {}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY + "_notes", JSON.stringify(notes));
+}
+
+function itemKey(secId, idx) { return secId + ":" + idx; }
+
+function updateProgress() {
+  let total = 0, done = 0;
+  DATA.forEach(s => s.items.forEach((_, i) => { total++; if(state[itemKey(s.id, i)]) done++; }));
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("pbar").style.width = pct + "%";
+  document.getElementById("ptext").textContent = done + " / " + total;
+  document.getElementById("ppct").textContent = pct + " %";
+  // Section badges
+  DATA.forEach(s => {
+    let st = 0, sd = 0;
+    s.items.forEach((_, i) => { st++; if(state[itemKey(s.id, i)]) sd++; });
+    const badge = document.getElementById("badge-" + s.id);
+    const spf = document.getElementById("spf-" + s.id);
+    if(badge) {
+      badge.textContent = sd + "/" + st;
+      badge.className = "badge " + (sd === st ? "badge-ok" : sd > 0 ? "badge-info" : "badge-warn");
+    }
+    if(spf) spf.style.width = (st ? Math.round(sd/st*100) : 0) + "%";
+  });
+  // Nav badges
+  DATA.forEach(s => {
+    const a = document.getElementById("nav-" + s.id);
+    if(!a) return;
+    let st = 0, sd = 0;
+    s.items.forEach((_, i) => { st++; if(state[itemKey(s.id, i)]) sd++; });
+    a.classList.toggle("active", sd === st && st > 0);
+  });
+}
+
+function render() {
+  // Nav
+  const nav = document.getElementById("nav");
+  nav.innerHTML = DATA.map(s =>
+    `<a href="#sec-${s.id}" id="nav-${s.id}">${s.icon} ${s.titel.split(/[–(]/)[0].trim()}</a>`
+  ).join("");
+
+  // Sections
+  const app = document.getElementById("app");
+  app.innerHTML = DATA.map(s => `
+    <div class="section open" id="sec-${s.id}">
+      <div class="section-head" onclick="toggle('${s.id}')">
+        <h2>${s.icon} ${s.titel}</h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge badge-warn" id="badge-${s.id}">0/${s.items.length}</span>
+          <span class="arrow">▶</span>
+        </div>
+      </div>
+      <div class="section-progress"><div class="section-progress-fill" id="spf-${s.id}"></div></div>
+      <div class="section-body">
+        ${s.items.map((text, i) => {
+          const k = itemKey(s.id, i);
+          const checked = state[k] ? "checked" : "";
+          const done = state[k] ? "done" : "";
+          const note = notes[k] || "";
+          return `
+            <div class="item ${done}" id="item-${k}">
+              <input type="checkbox" ${checked} onchange="check('${k}', this.checked)">
+              <div class="item-text">
+                <div onclick="check('${k}', !state['${k}'])">${text}</div>
+                <input class="note-input" type="text" placeholder="Notiz / Wert…"
+                  value="${note.replace(/"/g, '&quot;')}"
+                  onfocus="this.parentElement.parentElement.style.background='rgba(90,169,230,.05)'"
+                  onblur="this.parentElement.parentElement.style.background='';noteChange('${k}', this.value)"
+                  onchange="noteChange('${k}', this.value)">
+              </div>
+            </div>`;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  updateProgress();
+}
+
+function check(key, val) {
+  state[key] = val ? true : false;
+  if(!val) delete state[key];
+  save();
+  const el = document.getElementById("item-" + key);
+  if(el) {
+    el.classList.toggle("done", !!val);
+    el.querySelector("input[type=checkbox]").checked = !!val;
+  }
+  updateProgress();
+}
+
+function noteChange(key, val) {
+  val = val.trim();
+  if(val) notes[key] = val; else delete notes[key];
+  save();
+}
+
+function toggle(id) {
+  document.getElementById("sec-" + id)?.classList.toggle("open");
+}
+
+let allOpen = true;
+function toggleAll() {
+  allOpen = !allOpen;
+  document.querySelectorAll(".section").forEach(s => s.classList.toggle("open", allOpen));
+}
+
+function resetAll() {
+  if(!confirm("Alle Häkchen und Notizen zurücksetzen?")) return;
+  state = {}; notes = {}; save(); render();
+}
+
+render();
+</script>
+</body>
+</html>
