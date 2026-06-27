@@ -2,7 +2,7 @@
 
 ## Aktueller Stand
 
-Split-Geräte werden als mögliche **Hauptheizung** geprüft (vorläufig bevorzugte Richtung).
+**Entschieden (2026-06-27):** Split-Multisplit als Hauptheizung. Siehe ADR-002.
 
 ## Vorteile
 

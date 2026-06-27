@@ -16,11 +16,12 @@ Der aktuelle strategische Favorit ist:
 - Dach oder oberste Geschossdecke fachgerecht dämmen,
 - gute dreifach verglaste Fenster prüfen,
 - anschließend Heizlast berechnen,
-- Luft-Luft-Wärmepumpen/Splitklimaanlagen als Hauptheizung prüfen,
-- vorhandenen Holzofen als Reserve behalten,
+- **Luft-Luft-Wärmepumpen/Splitklimaanlagen als Hauptheizung** (entschieden, ADR-002),
+- Holzofen wird nicht als Reserve genutzt – Kamin wird verschlossen (Feuchtigkeitsrisiko),
+- Infrarot-Paneele als Reserve-/Zusatzheizung,
 - Warmwasser separat wirtschaftlich und möglichst PV-orientiert lösen.
 
-Diese Richtung ist **vorläufig**. Es wurden noch keine abschließenden Systementscheidungen dokumentiert.
+Die Heizentscheidung (Split-WP) ist **dokumentiert** (ADR-002, 2026-06-27). Übrige Entscheidungen stehen noch aus.
 
 ---
 
@@ -140,10 +141,11 @@ Diese Richtung ist **vorläufig**. Es wurden noch keine abschließenden Systemen
 
 | Variante | Status | Kurzbewertung |
 |---|---|---|
-| Split-Luft-Luft-Wärmepumpen | `VORLÄUFIG BEVORZUGT` | wahrscheinlich geringere Investition; passt zum fehlenden Wassersystem; Kühlung möglich |
-| Luft-Wasser-Wärmepumpe + Fußbodenheizung | `VERGLEICHSOPTION` | hoher Komfort, aber großer Eingriff und hohe Investition |
-| elektrische Fußbodenheizung als Hauptheizung | `NICHT BEVORZUGT` | niedrige Anschaffung, aber voraussichtlich hohe Betriebskosten |
-| Holzofen | `BESTAND/RESERVE` | soll nach Möglichkeit als Reserve bleiben |
+| Split-Luft-Luft-Wärmepumpen | `ENTSCHIEDEN` | Hauptheizung (ADR-002, 2026-06-27) |
+| Luft-Wasser-Wärmepumpe + Fußbodenheizung | `VERWORFEN` | zu teuer, zu großer Eingriff, Förderung unsicher |
+| elektrische Fußbodenheizung als Hauptheizung | `VERWORFEN` | hohe Betriebskosten |
+| Holzofen | `WIRD STILLGELEGT` | Kamin wird verschlossen (Wassereintritt im Schacht) |
+| Infrarot-Paneele | `GEPLANT` | Reserve-/Zusatzheizung für Bad, Flur, ggf. Schlafzimmer |
 | Durchlauferhitzer | `ZU PRÜFEN` | für geringen Warmwasserbedarf und geringe Investition |
 | Brauchwasserwärmepumpe | `ZU PRÜFEN` | Aufstellraum, Bedarf und PV-Nutzung prüfen |
 
@@ -237,7 +239,9 @@ Vor Auftragserteilung für förderrelevante Maßnahmen schriftlich klären:
 
 ### Getroffen
 
-- Keine endgültige Heizsystementscheidung dokumentiert.
+- **Heizsystem: Split-/Multisplit-Wärmepumpen** (ADR-002, 2026-06-27).
+- **Holzofen/Kamin: Stilllegung und Verschließen** (Feuchtigkeitsschutz, 2026-06-27).
+- **Reserve: Infrarot-Paneele** statt Holzofen (2026-06-27).
 - Keine endgültige Fensterentscheidung dokumentiert.
 - Keine endgültige Dachkonstruktion dokumentiert.
 - Keine endgültige Warmwasserentscheidung dokumentiert.
@@ -246,10 +250,7 @@ Vor Auftragserteilung für förderrelevante Maßnahmen schriftlich klären:
 
 - Einblasdämmung bei technischer Eignung.
 - Dreifachfenster bei sinnvoller Gesamtwirtschaftlichkeit und passender Förderung.
-- Split-Luft-Luft-Wärmepumpen als wahrscheinlich wirtschaftlichste Hauptheizung.
-- Holzofen als Reserve.
 - Keine elektrische Fußbodenheizung als Hauptsystem.
-- Luft-Wasser-Wärmepumpe mit Fußbodenheizung nur bei ohnehin umfassendem Fußbodenaufbau oder bewusster Komfortentscheidung.
 
 ---
 
@@ -349,7 +350,7 @@ Für die PV erfassen:
 | Dach | 🔴 | Aufbau und Zustand unbekannt |
 | Außenwanddämmung | 🟡 | wahrscheinlich interessant, Eignung ungeprüft |
 | Fenster | 🟡 | Austausch geplant, Maße und Angebote fehlen |
-| Heizung | 🟡 | plausible Tendenz, Heizlast fehlt |
+| Heizung | 🟢 | Split-WP entschieden (ADR-002), Heizlast und Angebote fehlen noch |
 | Warmwasser | 🔴 | Bestand und Zielsystem offen |
 | Elektro | 🔴 | Zustand und Leistungsreserve unbekannt |
 | PV | 🟡 | Anlage vorhanden, Kerndaten widersprüchlich |
