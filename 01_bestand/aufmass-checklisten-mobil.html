@@ -143,6 +143,88 @@ body {
 .footer .btn-reset { color: var(--bad); border-color: rgba(239,106,106,.3); }
 .footer .btn-expand { color: var(--accent); border-color: rgba(90,169,230,.3); }
 
+/* Export bar */
+.export-bar {
+  padding: 10px 16px; display: flex; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.btn-export {
+  flex: 1; padding: 12px; border-radius: 12px;
+  font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), #4a90c8);
+  color: #07111b;
+}
+.btn-export:active { opacity: .85; }
+
+/* Export modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  justify-content: center; align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--panel); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 600px; max-height: 85vh;
+  display: flex; flex-direction: column;
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-head {
+  padding: 18px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-head h2 { font-size: 17px; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-size: 18px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+.modal-actions {
+  padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 8px;
+  border-top: 1px solid var(--border);
+}
+.modal-actions button {
+  padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700;
+  border: 1px solid var(--border); cursor: pointer; width: 100%;
+}
+.modal-actions .btn-share {
+  background: linear-gradient(135deg, var(--accent), #4a90c8);
+  color: #07111b; border: none;
+}
+.modal-actions .btn-copy { background: var(--panel); color: var(--text); }
+.modal-actions .btn-download { background: var(--panel); color: var(--ok); border-color: rgba(108,194,138,.3); }
+
+.export-preview {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px; font-size: 12px;
+  font-family: "SF Mono", Menlo, monospace;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 40vh; overflow-y: auto;
+  color: var(--muted); line-height: 1.6;
+}
+.export-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+.export-stat {
+  background: var(--bg); border-radius: 10px; padding: 10px 14px;
+  border: 1px solid var(--border);
+}
+.export-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.export-stat .val { font-size: 18px; font-weight: 700; margin-top: 2px; }
+
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--ok); color: #07111b; padding: 10px 20px;
+  border-radius: 10px; font-size: 14px; font-weight: 700;
+  z-index: 200; opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
 @media (min-width: 600px) {
   body { max-width: 600px; margin: 0 auto; }
 }
@@ -160,13 +242,37 @@ body {
   <div class="progress-text"><span id="ptext">0 / 0</span><span id="ppct">0 %</span></div>
 </div>
 
+<div class="export-bar">
+  <button class="btn-export" onclick="openExport()">Daten sichern / exportieren</button>
+</div>
+
 <nav class="nav" id="nav"></nav>
 <div id="app"></div>
 
 <div class="footer">
-  <button class="btn-expand" onclick="toggleAll()">Alle auf/zuklappen</button>
-  <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+  <button class="btn-expand" onclick="toggleAll()">Auf/Zuklappen</button>
+  <button class="btn-reset" onclick="resetAll()">Reset</button>
 </div>
+
+<div class="modal-overlay" id="exportModal" onclick="if(event.target===this)closeExport()">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Daten exportieren</h2>
+      <button class="modal-close" onclick="closeExport()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="export-stats" id="exportStats"></div>
+      <div class="export-preview" id="exportPreview"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-share" onclick="shareExport()" id="btnShare">Teilen (WhatsApp, Mail, …)</button>
+      <button class="btn-copy" onclick="copyExport()">In Zwischenablage kopieren</button>
+      <button class="btn-download" onclick="downloadExport()">Als Datei herunterladen (.md)</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const DATA = [
@@ -483,6 +589,131 @@ function toggleAll() {
 function resetAll() {
   if(!confirm("Alle Häkchen und Notizen zurücksetzen?")) return;
   state = {}; notes = {}; save(); render();
+}
+
+// --- Export ---
+
+function generateMarkdown() {
+  const now = new Date();
+  const datum = now.toISOString().slice(0,10);
+  const zeit = now.toTimeString().slice(0,5);
+  let total = 0, done = 0, noted = 0;
+  DATA.forEach(s => s.items.forEach((_, i) => {
+    const k = itemKey(s.id, i);
+    total++;
+    if(state[k]) done++;
+    if(notes[k]) noted++;
+  }));
+
+  let md = `# Aufmaß-Ergebnisse – Vor-Ort-Begehung\n\n`;
+  md += `> **Datum:** ${datum} ${zeit}\n`;
+  md += `> **Objekt:** Wilhelm-Busch-Straße 7, Fürstenau\n`;
+  md += `> **Erfasst:** ${done}/${total} Punkte, ${noted} Notizen\n`;
+  md += `> **Qualität:** Alle Werte [ABGELESEN] – am Original prüfen\n\n`;
+  md += `---\n\n`;
+
+  DATA.forEach(s => {
+    const items = s.items.map((text, i) => {
+      const k = itemKey(s.id, i);
+      const chk = state[k] ? "x" : " ";
+      const note = notes[k];
+      let line = `- [${chk}] ${text}`;
+      if(note) line += ` → **${note}**`;
+      return line;
+    });
+    const secDone = s.items.filter((_,i) => state[itemKey(s.id,i)]).length;
+    const hasData = secDone > 0 || s.items.some((_,i) => notes[itemKey(s.id,i)]);
+    if(hasData) {
+      md += `## ${s.icon} ${s.titel} (${secDone}/${s.items.length})\n\n`;
+      md += items.join("\n") + "\n\n";
+    }
+  });
+
+  // Nur-Notizen-Zusammenfassung für schnellen Überblick
+  const allNotes = [];
+  DATA.forEach(s => s.items.forEach((text, i) => {
+    const k = itemKey(s.id, i);
+    if(notes[k]) allNotes.push({ bereich: s.titel, punkt: text, wert: notes[k] });
+  }));
+
+  if(allNotes.length > 0) {
+    md += `---\n\n## Zusammenfassung aller Messwerte\n\n`;
+    md += `| Bereich | Prüfpunkt | Wert |\n|---|---|---|\n`;
+    allNotes.forEach(n => {
+      md += `| ${n.bereich} | ${n.punkt} | ${n.wert} |\n`;
+    });
+    md += `\n`;
+  }
+
+  return { md, total, done, noted };
+}
+
+let exportedMd = "";
+
+function openExport() {
+  const { md, total, done, noted } = generateMarkdown();
+  exportedMd = md;
+  document.getElementById("exportStats").innerHTML = `
+    <div class="export-stat"><div class="label">Erledigt</div><div class="val">${done} / ${total}</div></div>
+    <div class="export-stat"><div class="label">Messwerte</div><div class="val">${noted}</div></div>
+  `;
+  document.getElementById("exportPreview").textContent = md;
+  document.getElementById("exportModal").classList.add("open");
+  // Hide share button if not supported
+  document.getElementById("btnShare").style.display = navigator.share ? "" : "none";
+}
+
+function closeExport() {
+  document.getElementById("exportModal").classList.remove("open");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+async function shareExport() {
+  try {
+    await navigator.share({
+      title: "Aufmaß-Ergebnisse Ferienhaus Fürstenau",
+      text: exportedMd,
+    });
+  } catch(e) {
+    if(e.name !== "AbortError") copyExport();
+  }
+}
+
+async function copyExport() {
+  try {
+    await navigator.clipboard.writeText(exportedMd);
+    showToast("In Zwischenablage kopiert!");
+  } catch(e) {
+    // Fallback for older browsers
+    const ta = document.createElement("textarea");
+    ta.value = exportedMd;
+    ta.style.cssText = "position:fixed;left:-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("In Zwischenablage kopiert!");
+  }
+}
+
+function downloadExport() {
+  const datum = new Date().toISOString().slice(0,10);
+  const blob = new Blob([exportedMd], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `aufmass-ergebnisse-${datum}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Datei heruntergeladen!");
 }
 
 render();
