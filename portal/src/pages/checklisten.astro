@@ -1,0 +1,139 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { parseChecklist } from "../lib/mdtable";
+
+const docs = await getCollection("docs");
+const clDoc = docs.find((d) => d.id === "01_bestand/aufmass-checklisten");
+const body = clDoc?.body ?? "";
+
+interface CheckGroup {
+  titel: string;
+  icon: string;
+  items: { done: boolean; text: string }[];
+}
+
+const gruppen: CheckGroup[] = [];
+let cur: CheckGroup | null = null;
+for (const line of body.split("\n")) {
+  const h2 = line.match(/^##\s+\d+\.\s+(.*)$/);
+  if (h2) {
+    const titel = h2[1].trim();
+    const icon = titel.includes("Raum") ? "📏" :
+      titel.includes("Fenster") ? "🪟" :
+      titel.includes("Außenwand") || titel.includes("Fassade") ? "🧱" :
+      titel.includes("Dach") ? "🏠" :
+      titel.includes("PV") ? "☀️" :
+      titel.includes("Elektro") ? "⚡" :
+      titel.includes("Heizung") || titel.includes("Warmwasser") ? "🔥" :
+      titel.includes("Wanddurchbruch") ? "🔨" :
+      titel.includes("Foto") ? "📷" :
+      titel.includes("Ausrüstung") || titel.includes("Pack") ? "🎒" : "📋";
+    cur = { titel, icon, items: [] };
+    gruppen.push(cur);
+  }
+  if (cur) {
+    const m = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(.*)$/);
+    if (m) cur.items.push({ done: m[1].toLowerCase() === "x", text: m[2].trim() });
+  }
+}
+
+const total = gruppen.reduce((s, g) => s + g.items.length, 0);
+const done = gruppen.reduce((s, g) => s + g.items.filter((i) => i.done).length, 0);
+const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+---
+
+<Base title="Checklisten" current="checklisten" crumb="Aufmaß-Checklisten">
+  <div class="page-head">
+    <p class="eyebrow">Vor-Ort-Begehung</p>
+    <h2>Aufmaß-Checklisten</h2>
+    <p class="lead">
+      {total} Prüfpunkte in {gruppen.length} Bereichen.
+      Diese Checklisten vor dem nächsten Besuch ausdrucken oder auf dem Smartphone nutzen.
+    </p>
+    <div class="btn-row">
+      <a class="btn" href="/docs/01_bestand/aufmass-checklisten">Markdown-Version</a>
+    </div>
+  </div>
+
+  <!-- Fortschrittsbalken -->
+  <div class="card" style="margin-bottom:22px">
+    <h3>Erfassungsfortschritt
+      <span style="float:right; font-weight:400; font-size:13px" class="muted">{done} / {total} erledigt</span>
+    </h3>
+    <div style="height:14px; border-radius:8px; background:var(--panel-2); overflow:hidden; margin:8px 0">
+      <div style={`height:100%; width:${pct}%; background:var(--accent); transition:width 0.3s`}></div>
+    </div>
+  </div>
+
+  <!-- Checklisten-Karten -->
+  <div class="grid cols-2">
+    {gruppen.map((g) => {
+      const gDone = g.items.filter((i) => i.done).length;
+      const gPct = g.items.length > 0 ? Math.round((gDone / g.items.length) * 100) : 0;
+      return (
+        <div class="card cl-card">
+          <h3 style="display:flex; justify-content:space-between; align-items:center">
+            <span>{g.icon} {g.titel}</span>
+            <span class={`badge ${gPct === 100 ? "ok" : gPct > 0 ? "info" : "warn"}`}>
+              {gDone}/{g.items.length}
+            </span>
+          </h3>
+          <div style="height:6px; border-radius:4px; background:var(--panel-2); overflow:hidden; margin:8px 0 12px">
+            <div style={`height:100%; width:${gPct}%; background:${gPct === 100 ? "var(--ok)" : "var(--accent)"}`}></div>
+          </div>
+          <ul class="cl-list">
+            {g.items.map((item) => (
+              <li class={item.done ? "done" : ""}>
+                <span class="cl-check">{item.done ? "☑" : "☐"}</span>
+                <span>{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+
+  <div class="card" style="margin-top:24px; border-color:var(--accent)">
+    <h3>Hinweise zur Vor-Ort-Begehung</h3>
+    <ul style="margin:0; padding-left:18px; font-size:14px; display:flex; flex-direction:column; gap:6px">
+      <li>Alle Maße als <span class="q-tag" style="background:#16263a;color:#c4e2ff">ABGELESEN</span> kennzeichnen und später am Original prüfen.</li>
+      <li>Zu jedem Punkt Fotos machen – Dateiname: Raum + Gegenstand.</li>
+      <li>Grundrissplan als Ausdruck mitnehmen und Maße einzeichnen.</li>
+      <li>Steckdosentester mitnehmen für Erdungsprüfung.</li>
+      <li>Dachboden nur mit Taschenlampe und Vorsicht betreten.</li>
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .cl-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .cl-list li {
+    display: flex;
+    gap: 8px;
+    align-items: start;
+    font-size: 13.5px;
+    line-height: 1.4;
+    padding: 3px 0;
+  }
+  .cl-list li.done {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .cl-check {
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+    font-size: 14px;
+  }
+</style>

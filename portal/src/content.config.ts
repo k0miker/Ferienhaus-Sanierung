@@ -64,7 +64,7 @@ const docs = defineCollection({
       "0[0-9]_*/**/*.md",
       "99_quellen/**/*.md",
       "PROJEKTSTATUS.md",
-      "codex_memory.md",
+      "memory.md",
       "README.md",
       "AGENTS.md",
     ],

@@ -2,10 +2,12 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import { titleFor, sectionFor, SECTIONS } from "../lib/sections";
-import { tableUnderHeading, ampelOf } from "../lib/mdtable";
+import { tableUnderHeading, ampelOf, parseChecklist } from "../lib/mdtable";
 import { statusClass, cleanStatus } from "../lib/status";
+import { KOSTEN_GRUPPEN } from "../content.config";
 
 const docs = await getCollection("docs");
+const positionen = await getCollection("kosten");
 // IDs werden vom Glob-Loader kleingeschrieben → case-insensitives Lookup.
 const byId = new Map(docs.map((d) => [d.id.toLowerCase(), d]));
 const status = byId.get("projektstatus");
@@ -40,6 +42,27 @@ const blocker = (blockerMatch?.[1] ?? "")
   .map((l) => l.match(/^\s*\d+\.\s+(.*)$/)?.[1]?.trim())
   .filter((x): x is string => Boolean(x))
   .slice(0, 6);
+
+// Kosten-Zusammenfassung
+const euro = (n: number) =>
+  n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const istFoerderung = (g: string) => g.startsWith("Förderung");
+const geplant = positionen.reduce((s, p) => istFoerderung(p.data.gruppe) ? s : s + p.data.betrag, 0);
+const bezahlt = positionen.filter((p) => p.data.gruppe === "bezahlt").reduce((s, p) => s + p.data.betrag, 0);
+const BUDGET_MAX = 100000;
+const budgetPct = Math.min(100, Math.round((geplant / BUDGET_MAX) * 100));
+const budgetAmpel = geplant === 0 ? "" : geplant <= 80000 ? "gruen" : geplant <= 100000 ? "gelb" : "rot";
+
+// Backlog-Zusammenfassung
+const backlog = byId.get("09_bauablauf/backlog");
+const tasks = backlog ? parseChecklist(backlog.body ?? "") : [];
+const offeneTasks = tasks.filter((t) => !t.done).length;
+
+// Checklisten-Zusammenfassung
+const clDoc = docs.find((d) => d.id === "01_bestand/aufmass-checklisten");
+const clItems = clDoc ? parseChecklist(clDoc.body ?? "") : [];
+const clDone = clItems.filter((i) => i.done).length;
+const clTotal = clItems.length;
 
 // Schnellzugriff auf Schlüsseldokumente
 const quick = [
@@ -145,6 +168,51 @@ const facts = [
         <p class="empty">Keine Maßnahmentabelle gefunden.</p>
       )
     }
+  </div>
+
+  <!-- Kosten & Fortschritt -->
+  <h3 style="margin:30px 0 12px">Budget &amp; Fortschritt</h3>
+  <div class="grid cols-2" style="margin-bottom:22px">
+    <!-- Budget -->
+    <div class="card">
+      <h3 style="display:flex; justify-content:space-between; align-items:center">
+        <span>Budget</span>
+        <span class={`badge ${budgetAmpel === "rot" ? "bad" : budgetAmpel === "gelb" ? "warn" : "ok"}`}>
+          {geplant === 0 ? "leer" : `${euro(geplant)} / 100 T€`}
+        </span>
+      </h3>
+      <div style="height:10px; border-radius:6px; background:var(--panel-2); overflow:hidden; margin:8px 0">
+        <div style={`height:100%; width:${budgetPct}%; background:var(--${budgetAmpel === "rot" ? "bad" : budgetAmpel === "gelb" ? "warn" : "ok"})`}></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:12px" class="muted">
+        <span>{positionen.length} Positionen</span>
+        <span>davon {euro(bezahlt)} bezahlt</span>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="/kosten">Kosten im Detail</a>
+      </div>
+    </div>
+
+    <!-- Aufmaß-Fortschritt -->
+    <div class="card">
+      <h3 style="display:flex; justify-content:space-between; align-items:center">
+        <span>Vor-Ort-Erfassung</span>
+        <span class={`badge ${clDone === clTotal && clTotal > 0 ? "ok" : "warn"}`}>
+          {clDone}/{clTotal}
+        </span>
+      </h3>
+      <div style="height:10px; border-radius:6px; background:var(--panel-2); overflow:hidden; margin:8px 0">
+        <div style={`height:100%; width:${clTotal > 0 ? Math.round((clDone / clTotal) * 100) : 0}%; background:var(--accent)`}></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:12px" class="muted">
+        <span>{offeneTasks} offene Aufgaben</span>
+        <span>{clTotal} Prüfpunkte</span>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="/checklisten">Checklisten</a>
+        <a class="btn" href="/zeitplan">Zeitplan</a>
+      </div>
+    </div>
   </div>
 
   <!-- Schnellzugriff -->
