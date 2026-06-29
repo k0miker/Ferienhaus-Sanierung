@@ -88,6 +88,23 @@ Luft-Luft-Wärmepumpen als Hauptheizung, Bad mit elektrischer FBH, Holzofen als 
 (kein wassergeführtes System / Kriterien). Realistisch **0 €** für die Heizung; nur die
 Hüllenmaßnahmen (A 1–3) sind förderfähig.
 
+### C.1 Optionale Ergänzung – PV-Speicher [ANNAHME]
+
+Ein Stromspeicher ist kein Heizsystemersatz, kann aber in der Split-Variante den PV-Eigenverbrauch
+und die Nutzung dynamischer Tarife verbessern. Der Speicher ist noch **nicht entschieden** und
+in der Gesamtübersicht unten nicht eingerechnet.
+
+| Maßnahme | Menge | Kennwert | Kosten (brutto) |
+|---|---:|---|---:|
+| AC-gekoppelter Speicher inkl. Batterie-Wechselrichter, Smart Meter, Elektroinstallation | 6–10 kWh | noch keine Angebote | **~3.000–6.000 €** |
+
+Hinweise:
+
+- [ANGABE] Vorhandener Wechselrichter vermutlich kein Hybrid-Wechselrichter → AC-Kopplung prüfen.
+- [ANGABE] Zusätzliches 800-W-Balkonkraftwerk im Mess-/Anmeldekonzept berücksichtigen.
+- [OFFEN] Notstromfähigkeit, Zählerschrank, Anmeldung und Wirtschaftlichkeit getrennt anbieten lassen.
+- [RISIKO] Billige Batteriemodulpreise sind nicht mit fertig installiertem, angemeldetem System gleichzusetzen.
+
 ---
 
 ## D. Gesamtüberblick (grobe Spanne)

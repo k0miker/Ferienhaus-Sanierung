@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
 import { titleFor, sectionFor } from "../../lib/sections";
 import { statusClass } from "../../lib/status";
 
@@ -20,13 +21,13 @@ const cmsLink = section.key === "08_entscheidungen" ? "/admin/index.html#/collec
 
 <Base title={title} current={section.key} crumb={section.label}>
   <div class="page-head">
-    <p class="eyebrow">{section.icon} {section.label}</p>
+    <p class="eyebrow"><Icon name={section.icon} size={13} /> {section.label}</p>
     <h2 data-pagefind-meta="title">{title}</h2>
     <div class="btn-row">
       {doc.data.status && <span class={`badge ${statusClass(doc.data.status)}`}>{doc.data.status}</span>}
-      <a class="btn" href={`/bereich/${section.key}`}>← {section.label}</a>
+      <a class="btn" href={`/bereich/${section.key}`}>{section.label}</a>
       {cmsLink && <a class="btn primary" href={cmsLink}>Im CMS bearbeiten</a>}
-      <a class="btn" href={rawHref} target="_blank" rel="noopener">Markdown-Original ↗</a>
+      <a class="btn" href={rawHref} target="_blank" rel="noopener">Markdown-Original <Icon name="external-link" size={14} /></a>
     </div>
   </div>
 
@@ -54,15 +55,7 @@ const cmsLink = section.key === "08_entscheidungen" ? "/admin/index.html#/collec
 </Base>
 
 <script>
-  // Qualitäts-/Evidenz-Tags aus AGENTS.md §4 farblich hervorheben.
-  const TAGS: Record<string, string> = {
-    BELEGT: "#163524;color:#bdf0cf",
-    ABGELESEN: "#16263a;color:#c4e2ff",
-    ANGABE: "#2a2433;color:#e0c8ff",
-    ANNAHME: "#352b14;color:#ffe6a8",
-    OFFEN: "#341a1a;color:#ffc4c4",
-    WIDERSPRUCH: "#3a1410;color:#ffb3a0",
-  };
+  // Qualitäts-/Evidenz-Tags aus AGENTS.md §4 hervorheben (theme-fähig über CSS-Klasse).
   const re = /\[(BELEGT|ABGELESEN|ANGABE|ANNAHME|OFFEN|WIDERSPRUCH)\]/g;
   const walker = document.createTreeWalker(
     document.getElementById("docbody")!,
@@ -80,8 +73,7 @@ const cmsLink = section.key === "08_entscheidungen" ? "/admin/index.html#/collec
     text.replace(re, (match, tag, idx: number) => {
       frag.append(text.slice(last, idx));
       const span = document.createElement("span");
-      span.className = "q-tag";
-      span.setAttribute("style", "background:" + TAGS[tag]);
+      span.className = "q-tag " + tag.toLowerCase();
       span.textContent = tag;
       frag.append(span);
       last = idx + match.length;

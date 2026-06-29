@@ -77,6 +77,9 @@ const docs = defineCollection({
       bereich: z.string().optional(),
       datum: z.coerce.date().optional(),
       tags: z.array(z.string()).optional(),
+      // typ: "checkliste" macht ein Dokument zu einer interaktiven Checkliste
+      // (abhakbar/ausfüllbar unter /checklisten). Frei in jedem Bereich nutzbar.
+      typ: z.literal("checkliste").optional(),
     })
     .passthrough(),
 });

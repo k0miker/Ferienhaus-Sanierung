@@ -9,19 +9,20 @@ export interface Section {
   order: number;
 }
 
+// icon = Lucide-Iconname (siehe components/Icon.astro)
 export const SECTIONS: Section[] = [
-  { key: "_root", label: "Übersicht", icon: "📊", order: -1 },
-  { key: "00_projekt", label: "Projekt", icon: "🧭", order: 0 },
-  { key: "01_bestand", label: "Bestand", icon: "🏠", order: 1 },
-  { key: "02_gebaeudehuelle", label: "Gebäudehülle", icon: "🧱", order: 2 },
-  { key: "03_haustechnik", label: "Haustechnik", icon: "⚙️", order: 3 },
-  { key: "04_innenausbau", label: "Innenausbau", icon: "🛁", order: 4 },
-  { key: "05_angebote", label: "Angebote", icon: "📑", order: 5 },
-  { key: "06_kosten", label: "Kosten", icon: "💶", order: 6 },
-  { key: "07_foerderung", label: "Förderung", icon: "🏦", order: 7 },
-  { key: "08_entscheidungen", label: "Entscheidungen", icon: "✅", order: 8 },
-  { key: "09_bauablauf", label: "Bauablauf", icon: "📆", order: 9 },
-  { key: "99_quellen", label: "Quellen", icon: "📎", order: 99 },
+  { key: "_root", label: "Übersicht", icon: "layout-dashboard", order: -1 },
+  { key: "00_projekt", label: "Projekt", icon: "compass", order: 0 },
+  { key: "01_bestand", label: "Bestand", icon: "home", order: 1 },
+  { key: "02_gebaeudehuelle", label: "Gebäudehülle", icon: "layers", order: 2 },
+  { key: "03_haustechnik", label: "Haustechnik", icon: "settings", order: 3 },
+  { key: "04_innenausbau", label: "Innenausbau", icon: "paint-roller", order: 4 },
+  { key: "05_angebote", label: "Angebote", icon: "files", order: 5 },
+  { key: "06_kosten", label: "Kosten", icon: "euro", order: 6 },
+  { key: "07_foerderung", label: "Förderung", icon: "landmark", order: 7 },
+  { key: "08_entscheidungen", label: "Entscheidungen", icon: "circle-check", order: 8 },
+  { key: "09_bauablauf", label: "Bauablauf", icon: "calendar-days", order: 9 },
+  { key: "99_quellen", label: "Quellen", icon: "paperclip", order: 99 },
 ];
 
 const SECTION_BY_KEY = new Map(SECTIONS.map((s) => [s.key, s]));

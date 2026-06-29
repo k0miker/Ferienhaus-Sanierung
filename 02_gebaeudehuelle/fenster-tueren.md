@@ -14,6 +14,11 @@
 > **Vor Ort prüfen:** Sind die Holzfenster noch original (Alter ~47 Jahre) und gibt es noch
 > **Glasbaustein-Flächen** (z. B. Bad/Treppenhaus)? Diese ggf. mit ersetzen.
 
+## Fensterliste (Maße)
+
+> **[ANGABE] Eigentümer-Maße liegen vor** → `02_gebaeudehuelle/fensterliste.md`
+> (11 Öffnungen, ≈ 15,38 m²; noch **kein** geprüftes Vor-Ort-Aufmaß).
+
 ## Zu erfassen: Fensterliste (je Fenster)
 
 - eindeutige ID, Raum, Lage/Himmelsrichtung
@@ -40,7 +45,7 @@ Mehrpreis passen. Entscheidung offen – siehe `08_entscheidungen/ADR-001-fenste
 
 ## Offene Fragen
 
-- Vollständige Fensterliste mit Maßen (Vor-Ort-Aufmaß).
+- Eigentümer-Maße vorhanden (`fensterliste.md`), aber **Vor-Ort-Aufmaß durch Fachbetrieb** noch offen.
 - Glasbausteinflächen noch vorhanden? Ersatz erwünscht?
 - Rollladenkästen vorhanden/sanierungsbedürftig?
 - Förderung 15 % objektspezifisch bestätigt? (siehe Förderung)

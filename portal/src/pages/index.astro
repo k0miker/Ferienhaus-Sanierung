@@ -1,10 +1,12 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
 import { titleFor, sectionFor, SECTIONS } from "../lib/sections";
 import { tableUnderHeading, ampelOf, parseChecklist } from "../lib/mdtable";
 import { statusClass, cleanStatus } from "../lib/status";
 import { KOSTEN_GRUPPEN } from "../content.config";
+import { ROLES } from "../lib/roles";
 
 const docs = await getCollection("docs");
 const positionen = await getCollection("kosten");
@@ -66,13 +68,15 @@ const clTotal = clItems.length;
 
 // Schnellzugriff auf Schlüsseldokumente
 const quick = [
-  { id: "projektstatus", icon: "📋" },
-  { id: "00_projekt/offene-fragen", icon: "❓" },
-  { id: "00_projekt/massnahmenplan", icon: "🧩" },
-  { id: "06_kosten/kostenplan", icon: "💶" },
-  { id: "09_bauablauf/backlog", icon: "🗒️" },
-  { id: "08_entscheidungen/adr-001-fenster", icon: "✅" },
+  { id: "projektstatus", icon: "clipboard-list" },
+  { id: "00_projekt/offene-fragen", icon: "circle-help" },
+  { id: "00_projekt/massnahmenplan", icon: "layout-grid" },
+  { id: "06_kosten/kostenplan", icon: "euro" },
+  { id: "09_bauablauf/backlog", icon: "list-checks" },
+  { id: "08_entscheidungen/adr-001-fenster", icon: "circle-check" },
 ].filter((q) => byId.has(q.id));
+
+const ampelWort = { rot: "Rot", gelb: "Gelb", gruen: "Grün" } as const;
 
 const facts = [
   { label: "Baujahr", value: "1978" },
@@ -89,6 +93,23 @@ const facts = [
     {gesamt && <p class="lead">{gesamt}</p>}
   </div>
 
+  <!-- Rollen-Einstieg: das Portal als Schnittstelle für alle Beteiligten -->
+  <div class="card role-entry">
+    <div class="role-entry-head">
+      <span class="role-entry-eyebrow"><Icon name="contact" size={13} /> Ich bin …</span>
+      <span class="muted" style="font-size:12.5px">Schnittstelle für Bauleitung, Energieberater &amp; Handwerker</span>
+    </div>
+    <div class="role-entry-grid">
+      {ROLES.map((r) => (
+        <a class="role-tile" href={`/fuer/${r.key}`}>
+          <span class="role-tile-ico"><Icon name={r.icon} size={20} /></span>
+          <b>{r.label}</b>
+          <span class="meta">{r.short}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
   <div class="grid cols-4" style="margin-bottom:22px">
     {
       facts.map((f) => (
@@ -103,11 +124,12 @@ const facts = [
   <div class="grid cols-2">
     <!-- Projektampel -->
     <div class="card">
-      <h3>Projektampel
-        <span style="float:right; font-weight:400; font-size:13px" class="muted">
-          <span class="ampel rot"></span> {counts.rot}
-          &nbsp;<span class="ampel gelb"></span> {counts.gelb}
-          &nbsp;<span class="ampel gruen"></span> {counts.gruen}
+      <h3 style="display:flex; align-items:center; justify-content:space-between">
+        <span>Projektampel</span>
+        <span class="muted" style="display:flex; gap:10px; font-size:13px; font-weight:600">
+          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel rot">✕</span> {counts.rot}</span>
+          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel gelb">!</span> {counts.gelb}</span>
+          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel gruen">✓</span> {counts.gruen}</span>
         </span>
       </h3>
       {
@@ -115,7 +137,9 @@ const facts = [
           <div style="display:flex; flex-direction:column; gap:8px">
             {ampelRows.map((r) => (
               <div style="display:flex; align-items:center; gap:10px; font-size:14px">
-                <span class={`ampel ${r.farbe ?? ""}`} title={r.grund}></span>
+                <span class={`ampel ${r.farbe ?? ""}`} title={r.farbe ? ampelWort[r.farbe] : ""}>
+                  {r.farbe === "rot" ? "✕" : r.farbe === "gelb" ? "!" : r.farbe === "gruen" ? "✓" : ""}
+                </span>
                 <b style="min-width:150px">{r.bereich}</b>
                 <span class="muted" style="font-size:13px">{r.grund}</span>
               </div>
@@ -129,7 +153,7 @@ const facts = [
 
     <!-- Kritische Blocker -->
     <div class="card">
-      <h3>🚧 Kritische Blocker</h3>
+      <h3 style="display:flex; align-items:center; gap:8px"><Icon name="construction" size={17} /> Kritische Blocker</h3>
       {
         blocker.length ? (
           <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; font-size:14px">
@@ -140,13 +164,13 @@ const facts = [
         )
       }
       <div class="btn-row">
-        <a class="btn" href="/docs/projektstatus">Voller Projektstatus →</a>
+        <a class="btn" href="/docs/projektstatus">Voller Projektstatus <Icon name="arrow-right" size={15} /></a>
       </div>
     </div>
   </div>
 
   <!-- Maßnahmenstatus -->
-  <h3 style="margin:30px 0 12px">Maßnahmen &amp; Gewerke</h3>
+  <h2 class="section-head">Maßnahmen &amp; Gewerke</h2>
   <div class="card" style="padding:0; overflow:hidden">
     {
       massnRows.length ? (
@@ -171,7 +195,7 @@ const facts = [
   </div>
 
   <!-- Kosten & Fortschritt -->
-  <h3 style="margin:30px 0 12px">Budget &amp; Fortschritt</h3>
+  <h2 class="section-head">Budget &amp; Fortschritt</h2>
   <div class="grid cols-2" style="margin-bottom:22px">
     <!-- Budget -->
     <div class="card">
@@ -216,14 +240,14 @@ const facts = [
   </div>
 
   <!-- Schnellzugriff -->
-  <h3 style="margin:30px 0 12px">Schnellzugriff</h3>
+  <h2 class="section-head">Schnellzugriff</h2>
   <div class="grid cols-3">
     {
       quick.map((q) => {
         const d = byId.get(q.id)!;
         return (
           <a class="card link" href={`/docs/${d.id}`}>
-            <h3>{q.icon} {titleFor(d)}</h3>
+            <h3 style="display:flex; align-items:center; gap:8px"><Icon name={q.icon} size={17} /> {titleFor(d)}</h3>
             <span class="meta">{sectionFor(d.id).label}</span>
           </a>
         );
@@ -231,3 +255,20 @@ const facts = [
     }
   </div>
 </Base>
+
+<style>
+  .role-entry { margin-bottom: 22px; padding: var(--s-4) var(--s-5) var(--s-5); }
+  .role-entry-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .role-entry-eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; display: inline-flex; align-items: center; gap: 6px; }
+  .role-entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s-3); }
+  .role-tile {
+    display: flex; flex-direction: column; gap: 4px; padding: 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--panel); color: var(--text);
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+  .role-tile:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-1px); text-decoration: none; }
+  .role-tile-ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); margin-bottom: 4px; }
+  .role-tile b { color: var(--heading); }
+  .role-tile .meta { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+</style>

@@ -175,6 +175,8 @@ Weitere sichtbare Angaben:
 
 - **[ANGABE]** Aktuell wird mit einem **Holzofen** und elektrischen **Heizlüftern/Direktheizgeräten** geheizt.
 - **[ANGABE]** Es gibt bislang offenbar **kein wassergeführtes Zentralheizungs- und Wärmeverteilsystem**.
+- **[ANGABE]** Ganzjährige Nutzung ist geplant; damit sind raumweise Behaglichkeit,
+  Mindesttemperatur und Feuchteschutz wichtige Kriterien.
 - **[OFFEN]** Leistung, Typ, Baujahr, Zulassung, Schornsteinstatus und räumliche Wirkung des Holzofens sind nicht erfasst.
 - **[OFFEN]** Tatsächliche Verbrauchsdaten für Holz und Strom liegen noch nicht strukturiert vor.
 
@@ -208,6 +210,7 @@ Offene Punkte:
 - Heizlast je Raum,
 - Anzahl und Position der Innengeräte,
 - Wärmeverteilung bei geschlossenen Türen,
+- reine Flurplatzierung kritisch prüfen; raumbezogene Varianten mit mehreren Innengeräten vergleichen,
 - Schall innen und außen,
 - Kondensatführung,
 - Frostbetrieb und Leistungsdaten,
@@ -247,9 +250,11 @@ Dies ist noch **keine endgültige Entscheidung**.
 | Merkmal | Bekannter Stand |
 |---|---|
 | Standort | Dach des Ferienhauses |
-| Leistung | **[WIDERSPRUCH] 6,3 kWp beziehungsweise 6,7 kWp genannt** |
+| Leistung | **[WIDERSPRUCH] 6,3 kWp beziehungsweise 6,7 kWp genannt; im KI-Dialog 2026-06-29 ca. 7 kWp** |
 | Inbetriebnahme | **[ANGABE] vermutlich 2014** |
 | Batteriespeicher | **[ANGABE] keiner vorhanden** |
+| Wechselrichter | **[ANGABE] vermutlich kein Hybrid-Wechselrichter** |
+| Zusatz-PV | **[ANGABE] 800-W-Balkonkraftwerk vorhanden beziehungsweise mitzudenken** |
 | Einspeisevergütung | **[WIDERSPRUCH/OFFEN] einmal „keine Einspeisevergütung“, später „scheint eine Einspeisevergütung zu geben“** |
 | Netzbetreiber | **[ANGABE] vermutlich Westnetz** |
 | Betreiberwechsel | **[OFFEN] noch zu klären beziehungsweise durchzuführen** |
@@ -268,6 +273,8 @@ Dies ist noch **keine endgültige Entscheidung**.
 9. Jährliche Erzeugungsdaten.
 10. Betreiberwechsel bei Westnetz und im Marktstammdatenregister.
 11. Auswirkungen einer Dachsanierung auf Demontage, Montage, Gewährleistung und Kosten.
+12. Status, Anmeldung und Messkonzept des 800-W-Balkonkraftwerks.
+13. Eignung für AC-gekoppelten Speicher, falls der vorhandene Wechselrichter nicht hybridfähig ist.
 
 Bis zur Klärung darf in Wirtschaftlichkeitsrechnungen nur mit Szenarien gearbeitet werden.
 

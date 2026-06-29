@@ -1,11 +1,13 @@
 ---
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
 ---
 
 <Base title="Suche" current="suche" crumb="Suche">
   <div class="page-head">
-    <p class="eyebrow">Volltextsuche</p>
-    <h2>🔍 Suche</h2>
+    <p class="eyebrow"><Icon name="search" size={13} /> Volltextsuche</p>
+    <h2>Suche</h2>
+    <p class="lead">Tipp: <kbd class="kbd-inline">⌘K</kbd> öffnet überall die Schnellsuche zum Springen.</p>
   </div>
 
   <div class="searchbox" style="max-width:520px; margin:0 0 20px">

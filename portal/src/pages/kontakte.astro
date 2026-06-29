@@ -1,0 +1,119 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
+import { parseTables } from "../lib/mdtable";
+
+const docs = await getCollection("docs");
+const byId = new Map(docs.map((d) => [d.id.toLowerCase(), d]));
+const doc = byId.get("09_bauablauf/handwerkerkontakte");
+const body = doc?.body ?? "";
+
+// In Gewerk-Abschnitte (H2) splitten und je Abschnitt die erste Tabelle parsen.
+type Firma = { name: string; ort: string; kontakt: string; notiz: string };
+type Gewerk = { titel: string; icon: string; firmen: Firma[] };
+
+function iconFor(t: string): string {
+  const s = t.toLowerCase();
+  if (s.includes("heiz") || s.includes("shk") || s.includes("wärme") || s.includes("pv")) return "flame";
+  if (s.includes("dämm")) return "layers";
+  if (s.includes("dach")) return "home";
+  if (s.includes("fenster") || s.includes("tür")) return "layout-grid";
+  if (s.includes("elektro")) return "zap";
+  if (s.includes("maler") || s.includes("boden") || s.includes("innen")) return "paint-roller";
+  return "hammer";
+}
+
+const strip = (s: string) => s.replace(/\*\*/g, "").trim();
+const gewerke: Gewerk[] = [];
+for (const part of body.split(/^##\s+/m).slice(1)) {
+  const nl = part.indexOf("\n");
+  const titel = strip(part.slice(0, nl));
+  const table = parseTables(part.slice(nl))[0];
+  if (!table) continue;
+  const col = (row: string[], name: RegExp) => {
+    const i = table.headers.findIndex((h) => name.test(h.toLowerCase()));
+    return i >= 0 ? strip(row[i] ?? "") : "";
+  };
+  const firmen = table.rows
+    .map((r) => ({
+      name: col(r, /firma|betrieb|name/),
+      ort: col(r, /ort/),
+      kontakt: col(r, /kontakt|tel|mail/),
+      notiz: col(r, /notiz|hinweis/),
+    }))
+    .filter((f) => f.name);
+  if (firmen.length) gewerke.push({ titel, icon: iconFor(titel), firmen });
+}
+
+const firmenGesamt = gewerke.reduce((n, g) => n + g.firmen.length, 0);
+
+// Kontakt-Zelle in klickbare Teile zerlegen (Tel/Mail/Web).
+type Part = { kind: "tel" | "mail" | "web" | "text"; text: string; href?: string };
+function splitKontakt(s: string): Part[] {
+  return s
+    .split(/\s*·\s*|\s{2,}/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t): Part => {
+      if (/^tel\b/i.test(t)) return { kind: "tel", text: t, href: "tel:" + t.replace(/[^\d+]/g, "") };
+      if (/@/.test(t) && !/\s/.test(t)) return { kind: "mail", text: t, href: "mailto:" + t };
+      if (/^[\w.-]+\.[a-z]{2,}(\/\S*)?$/i.test(t)) return { kind: "web", text: t, href: "https://" + t };
+      return { kind: "text", text: t };
+    });
+}
+const partIcon = { tel: "phone", mail: "mail", web: "external-link", text: "" } as const;
+---
+
+<Base title="Kontakte" current="kontakte" crumb="Kontakte">
+  <div class="page-head">
+    <p class="eyebrow"><Icon name="contact" size={13} /> Beteiligte &amp; Betriebe</p>
+    <h2>Kontakte</h2>
+    <p class="lead">
+      {firmenGesamt} Betriebe in {gewerke.length} Gewerken. Recherchiert und
+      <span class="q-tag abgelesen">ABGELESEN</span> – vor der ersten Kontaktaufnahme bestätigen.
+      Quelle: <a href="/docs/09_bauablauf/handwerkerkontakte">Handwerkerkontakte</a>.
+    </p>
+  </div>
+
+  {gewerke.length === 0 ? (
+    <p class="empty">Keine Kontakt-Tabellen gefunden.</p>
+  ) : (
+    gewerke.map((g) => (
+      <section style="margin-bottom:6px">
+        <h2 class="section-head"><Icon name={g.icon} size={15} /> {g.titel}</h2>
+        <div class="grid cols-2">
+          {g.firmen.map((f) => (
+            <div class="card kontakt-card">
+              <b class="kontakt-name">{f.name}</b>
+              {f.ort && <span class="meta"><Icon name="map-pin" size={13} /> {f.ort}</span>}
+              {f.kontakt && (
+                <div class="kontakt-links">
+                  {splitKontakt(f.kontakt).map((p) =>
+                    p.href ? (
+                      <a class="kontakt-link" href={p.href}>
+                        {partIcon[p.kind] && <Icon name={partIcon[p.kind]} size={13} />} {p.text}
+                      </a>
+                    ) : (
+                      <span class="kontakt-link muted">{p.text}</span>
+                    ),
+                  )}
+                </div>
+              )}
+              {f.notiz && <p class="kontakt-notiz">{f.notiz}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+    ))
+  )}
+</Base>
+
+<style>
+  .kontakt-card { display: flex; flex-direction: column; gap: 7px; }
+  .kontakt-name { color: var(--heading); font-size: 15px; }
+  .kontakt-card .meta { display: inline-flex; align-items: center; gap: 5px; }
+  .kontakt-links { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .kontakt-link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; }
+  .kontakt-notiz { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+</style>

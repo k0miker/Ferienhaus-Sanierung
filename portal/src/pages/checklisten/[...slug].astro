@@ -1,0 +1,346 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
+import { parseChecklistDoc, checklistSlug, checklistStateKey, checklistResultPath } from "../../lib/checklist";
+import { titleFor } from "../../lib/sections";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return docs
+    .filter((d) => d.data.typ === "checkliste")
+    .map((d) => ({
+      params: { slug: checklistSlug(d.id) },
+      props: { doc: d },
+    }));
+}
+
+const { doc } = Astro.props;
+const { sections, totalChecks } = parseChecklistDoc(doc.body ?? "");
+const modelJson = JSON.stringify({ sections });
+const slug = checklistSlug(doc.id);
+const stateKey = checklistStateKey(doc.id);
+const resultPath = checklistResultPath(doc.id);
+const title = titleFor(doc);
+---
+
+<Base title={title} current="checklisten" crumb={title}>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/checklisten"><Icon name="arrow-left" size={13} /> Alle Checklisten</a></p>
+    <h2>{title}</h2>
+    <p class="lead">
+      {totalChecks} Prüfpunkte in {sections.length} Bereichen. Abhaken und Werte eintragen –
+      Eingaben werden automatisch im Browser gepuffert (auch offline). Mit „Speichern" landet die
+      ausgefüllte Liste versioniert in der Projektakte.
+    </p>
+    <div class="btn-row">
+      <button type="button" class="btn primary" id="cl-save"><Icon name="save" size={15} /> In Akte speichern</button>
+      <button type="button" class="btn" id="cl-copy"><Icon name="copy" size={15} /> Als Markdown kopieren</button>
+      <button type="button" class="btn" id="cl-download"><Icon name="download" size={15} /> Als .md herunterladen</button>
+      <button type="button" class="btn" id="cl-reset"><Icon name="rotate-ccw" size={15} /> Eingaben zurücksetzen</button>
+      <a class="btn" href={`/docs/${slug}`}>Markdown-Vorlage</a>
+    </div>
+    <p class="cl-saved muted" id="cl-saved" hidden></p>
+  </div>
+
+  <!-- Gesamtfortschritt (klebt beim Scrollen) -->
+  <div class="card cl-progress" id="cl-overall">
+    <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px">
+      <span>Erfassungsfortschritt</span>
+      <label class="cl-filter">
+        <input type="checkbox" id="cl-only-open" /> nur offene
+      </label>
+      <span class="badge info" id="cl-overall-badge">0 / {totalChecks}</span>
+    </h3>
+    <div class="cl-bar"><div class="cl-bar-fill" id="cl-overall-fill" style="width:0%"></div></div>
+  </div>
+
+  {sections.map((s, si) => (
+    <section class="card cl-section" data-sec={si} id={`sec-${si}`} style="margin-top:16px">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px">
+        <span style="display:flex; align-items:center; gap:9px"><Icon name={s.icon} size={18} /> {s.title}</span>
+        <span class="badge warn cl-sec-badge">0/0</span>
+      </h3>
+
+      {s.blocks.map((b) => {
+        if (b.type === "subhead") return <h4 class="cl-subhead">{b.text}</h4>;
+        if (b.type === "note") return <p class="cl-note">{b.text}</p>;
+        if (b.type === "item")
+          return (
+            <div class="cl-item">
+              <input type="checkbox" class="cl-cb cl-count" data-k={b.checkId} />
+              <span class="cl-label">
+                {b.segs.map((seg) =>
+                  seg.t === "text" ? (
+                    <span>{seg.v}</span>
+                  ) : seg.t === "blank" ? (
+                    <input type="text" class="cl-in" data-k={seg.id} inputmode="text" />
+                  ) : (
+                    <input type="checkbox" class="cl-cb cl-cb-inline" data-k={seg.id} />
+                  ),
+                )}
+              </span>
+            </div>
+          );
+        // Tabelle
+        return (
+          <div class="cl-table-wrap">
+            <table class="cl-table">
+              <thead>
+                <tr>{b.headers.map((h) => <th>{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {b.rows.map((row) => (
+                  <tr>
+                    {row.map((cell) => (
+                      <td>
+                        {cell.kind === "text" ? (
+                          <span>{cell.v}</span>
+                        ) : cell.kind === "blank" ? (
+                          <input type="text" class="cl-in cl-cell" data-k={cell.id} />
+                        ) : (
+                          <input type="checkbox" class="cl-cb cl-count" data-k={cell.id} />
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </section>
+  ))}
+
+  <p class="muted" style="font-size:12px; margin-top:20px; display:flex; align-items:center; gap:6px">
+    <Icon name="circle-help" size={13} /> Zwischenstände liegen im Browser. „In Akte speichern"
+    schreibt eine versionierte Kopie. Erfasste Maße als <span class="q-tag abgelesen">ABGELESEN</span> kennzeichnen.
+  </p>
+
+  <script type="application/json" id="cl-model" set:html={modelJson} />
+  <div id="cl-meta" data-state-key={stateKey} data-slug={slug} data-result-path={resultPath} data-title={title} hidden></div>
+</Base>
+
+<script>
+  const meta = document.getElementById("cl-meta")!;
+  const KEY = meta.dataset.stateKey!;
+  const SLUG = meta.dataset.slug!;
+  const RESULT_PATH = meta.dataset.resultPath!;
+  const TITLE = meta.dataset.title!;
+
+  type State = Record<string, boolean | string>;
+  const load = (): State => {
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { return {}; }
+  };
+  let state: State = load();
+  let saveTimer: number | undefined;
+  const save = () => {
+    clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(() => localStorage.setItem(KEY, JSON.stringify(state)), 250);
+  };
+
+  // Felder aus gespeichertem Zustand füllen
+  document.querySelectorAll<HTMLInputElement>("[data-k]").forEach((el) => {
+    const k = el.dataset.k!;
+    if (el.type === "checkbox") {
+      el.checked = state[k] === true;
+      el.addEventListener("change", () => {
+        state[k] = el.checked;
+        save();
+        refresh();
+      });
+    } else {
+      if (typeof state[k] === "string") el.value = state[k] as string;
+      el.addEventListener("input", () => {
+        state[k] = el.value;
+        save();
+      });
+    }
+  });
+
+  // Fortschritt + Durchstreichen aktualisieren
+  function refresh() {
+    document.querySelectorAll<HTMLElement>(".cl-section").forEach((sec) => {
+      const boxes = sec.querySelectorAll<HTMLInputElement>(".cl-count");
+      const done = [...boxes].filter((b) => b.checked).length;
+      const badge = sec.querySelector(".cl-sec-badge")!;
+      badge.textContent = `${done}/${boxes.length}`;
+      badge.className = "badge cl-sec-badge " + (boxes.length && done === boxes.length ? "ok" : done > 0 ? "info" : "warn");
+    });
+    const all = document.querySelectorAll<HTMLInputElement>(".cl-count");
+    const allDone = [...all].filter((b) => b.checked).length;
+    const pct = all.length ? Math.round((allDone / all.length) * 100) : 0;
+    document.getElementById("cl-overall-fill")!.style.width = pct + "%";
+    document.getElementById("cl-overall-badge")!.textContent = `${allDone} / ${all.length}`;
+    document.querySelectorAll<HTMLElement>(".cl-item").forEach((row) => {
+      const main = row.querySelector<HTMLInputElement>(".cl-cb:not(.cl-cb-inline)");
+      row.classList.toggle("done", !!main?.checked);
+    });
+  }
+  refresh();
+
+  // „nur offene" filtern
+  document.getElementById("cl-only-open")?.addEventListener("change", (e) => {
+    const on = (e.target as HTMLInputElement).checked;
+    document.querySelectorAll<HTMLElement>(".cl-item").forEach((row) => {
+      const main = row.querySelector<HTMLInputElement>(".cl-cb:not(.cl-cb-inline)");
+      row.style.display = on && main?.checked ? "none" : "";
+    });
+  });
+
+  // Export als Markdown aus eingebettetem Modell + Zustand
+  type Seg = { t: string; v?: string; id?: string };
+  type Cell = { kind: string; v?: string; id?: string };
+  type Block = { type: string; text?: string; checkId?: string; segs?: Seg[]; headers?: string[]; rows?: Cell[][] };
+  type Section = { title: string; blocks: Block[] };
+  function buildMarkdown(): string {
+    const model = JSON.parse(document.getElementById("cl-model")!.textContent || "{}");
+    const cb = (k?: string) => (k && state[k] === true ? "x" : " ");
+    const val = (k?: string) => (k && typeof state[k] === "string" && state[k] ? (state[k] as string) : "___");
+    const out: string[] = [
+      "---",
+      `title: ${TITLE} – erfasst`,
+      "qualitaet: ABGELESEN",
+      `datum: ${new Date().toISOString().slice(0, 10)}`,
+      "---",
+      "",
+      `# ${TITLE} – erfasste Werte`,
+      "",
+      "> Export aus dem Portal, Stand " + new Date().toISOString().slice(0, 10) + ". Werte sind [ABGELESEN], am Original prüfen.",
+      "",
+    ];
+    for (const s of model.sections as Section[]) {
+      out.push("## " + s.title, "");
+      for (const b of s.blocks) {
+        if (b.type === "subhead") out.push("### " + b.text, "");
+        else if (b.type === "note") out.push(b.text!, "");
+        else if (b.type === "item") {
+          let line = "- [" + cb(b.checkId) + "] ";
+          for (const seg of b.segs!) {
+            if (seg.t === "text") line += seg.v;
+            else if (seg.t === "blank") line += val(seg.id);
+            else line += "[" + cb(seg.id) + "]";
+          }
+          out.push(line);
+        } else if (b.type === "table") {
+          out.push("| " + b.headers!.join(" | ") + " |");
+          out.push("|" + b.headers!.map(() => "---").join("|") + "|");
+          for (const row of b.rows!) {
+            out.push("| " + row.map((c) => (c.kind === "text" ? c.v : c.kind === "blank" ? val(c.id) : "[" + cb(c.id) + "]")).join(" | ") + " |");
+          }
+          out.push("");
+        }
+      }
+      out.push("");
+    }
+    return out.join("\n");
+  }
+
+  function flash(id: string, msg: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const old = el.innerHTML;
+    el.textContent = msg;
+    setTimeout(() => { el.innerHTML = old; }, 1800);
+  }
+
+  // In Akte speichern (API). Schreibt versionierte Kopie.
+  const WRITE_KEY = "portal:writekey";
+  document.getElementById("cl-save")?.addEventListener("click", async () => {
+    let key = localStorage.getItem(WRITE_KEY) || "";
+    if (!key) {
+      key = prompt("Speicher-Schlüssel (einmalig, wird im Browser gemerkt):") || "";
+      if (!key) return;
+      localStorage.setItem(WRITE_KEY, key);
+    }
+    flash("cl-save", "Speichere…");
+    try {
+      const res = await fetch("/api/checklist/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: SLUG, path: RESULT_PATH, title: TITLE, markdown: buildMarkdown(), key }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 401) localStorage.removeItem(WRITE_KEY);
+        throw new Error(data.error || `Fehler ${res.status}`);
+      }
+      const saved = document.getElementById("cl-saved")!;
+      saved.hidden = false;
+      saved.textContent = `✓ Gespeichert: ${data.path ?? RESULT_PATH} (${new Date().toLocaleString("de-DE")})`;
+      flash("cl-save", "Gespeichert ✓");
+    } catch (err) {
+      flash("cl-save", "Fehler – siehe Hinweis");
+      const saved = document.getElementById("cl-saved")!;
+      saved.hidden = false;
+      saved.textContent = "⚠ Speichern fehlgeschlagen: " + (err as Error).message + " (Tipp: per .md herunterladen)";
+    }
+  });
+
+  document.getElementById("cl-copy")?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(buildMarkdown());
+      flash("cl-copy", "Kopiert ✓");
+    } catch {
+      flash("cl-copy", "Kopieren nicht möglich");
+    }
+  });
+  document.getElementById("cl-download")?.addEventListener("click", () => {
+    const blob = new Blob([buildMarkdown()], { type: "text/markdown" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = SLUG.split("/").pop() + "-erfasst.md";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById("cl-reset")?.addEventListener("click", () => {
+    if (!confirm("Alle eingetragenen Werte und Haken in diesem Browser löschen?")) return;
+    localStorage.removeItem(KEY);
+    state = {};
+    document.querySelectorAll<HTMLInputElement>("[data-k]").forEach((el) => {
+      if (el.type === "checkbox") el.checked = false; else el.value = "";
+    });
+    refresh();
+  });
+</script>
+
+<style>
+  .cl-progress { position: sticky; top: 64px; z-index: 4; }
+  .cl-bar { height: 12px; border-radius: 8px; background: var(--panel-2); overflow: hidden; }
+  .cl-bar-fill { height: 100%; background: var(--accent); transition: width 0.25s ease; }
+  .cl-filter { font-size: 12px; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; margin-left: auto; cursor: pointer; }
+  .cl-filter input { width: 15px; height: 15px; accent-color: var(--accent); }
+  .cl-saved { font-size: 12.5px; margin-top: 10px; }
+
+  .page-head .eyebrow a { color: var(--accent); display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+
+  .cl-subhead { margin: 18px 0 6px; font-size: 14px; color: var(--heading); font-weight: 600; }
+  .cl-note { margin: 4px 0 10px; font-size: 13px; color: var(--muted); }
+
+  .cl-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 14.5px; line-height: 1.5; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
+  .cl-item.done > .cl-label > span:first-child { color: var(--muted); text-decoration: line-through; }
+  .cl-label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+
+  .cl-cb { width: 20px; height: 20px; flex: none; margin-top: 1px; accent-color: var(--accent); cursor: pointer; }
+  .cl-cb-inline { width: 17px; height: 17px; margin: 0 1px; }
+
+  .cl-in {
+    font: inherit; font-size: 16px; /* 16px: kein iOS-Auto-Zoom */
+    padding: 4px 8px; min-width: 70px; min-height: 32px;
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    background: var(--panel-2); color: var(--text);
+  }
+  .cl-in:focus { border-color: var(--accent); background: var(--panel); }
+  .cl-cell { min-width: 64px; width: 100%; }
+
+  .cl-table-wrap { overflow-x: auto; margin: 10px 0; }
+  .cl-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .cl-table th, .cl-table td { border: 1px solid var(--border); padding: 4px 6px; text-align: left; vertical-align: middle; }
+  .cl-table th { background: var(--panel-2); color: var(--heading); font-weight: 600; white-space: nowrap; }
+  .cl-table td { min-width: 64px; }
+
+  @media (max-width: 860px) {
+    .cl-progress { top: 56px; }
+  }
+</style>

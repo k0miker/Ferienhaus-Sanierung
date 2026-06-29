@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
 import Sidebar from "../components/Sidebar.astro";
+import Icon from "../components/Icon.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 
 interface Props {
   title: string;
@@ -17,22 +19,95 @@ const { title, current, crumb } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>{title} · Ferienhaus Fürstenau</title>
+    <!-- Theme vor dem ersten Paint setzen (kein Flash) -->
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const theme =
+          saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@300;400;500;600;700&display=swap"
+    />
   </head>
   <body>
     <div class="layout">
+      <button type="button" class="nav-backdrop" id="nav-backdrop" aria-hidden="true" tabindex="-1"></button>
       <Sidebar current={current} />
       <div class="main">
         <header class="topbar">
           <div class="crumbs">
+            <button
+              type="button"
+              class="nav-toggle"
+              id="nav-toggle"
+              aria-label="Menü öffnen"
+              aria-controls="sidebar"
+              aria-expanded="false"
+            >
+              <Icon name="menu" size={20} />
+            </button>
             <a href="/">Sanierungszentrale</a>
             {crumb && <> / <b>{crumb}</b></>}
           </div>
-          <div class="crumbs">📍 Wilhelm-Busch-Str. 7, Fürstenau</div>
+          <div class="topbar-right">
+            <div class="crumbs"><Icon name="map-pin" size={14} /> Wilhelm-Busch-Str. 7, Fürstenau</div>
+            <button type="button" class="cmdk-trigger" data-cmdk-open aria-label="Schnellsuche öffnen" title="Schnellsuche (⌘K)">
+              <Icon name="search" size={15} />
+              <span>Suchen</span>
+              <kbd>⌘K</kbd>
+            </button>
+            <button
+              type="button"
+              class="theme-toggle"
+              id="theme-toggle"
+              aria-label="Hell/Dunkel umschalten"
+              title="Hell/Dunkel umschalten"
+            >
+              <Icon name="sun" size={18} class="sun" />
+              <Icon name="moon" size={18} class="moon" />
+            </button>
+          </div>
         </header>
         <main class="content">
           <slot />
         </main>
       </div>
     </div>
+    <CommandPalette />
+
+    <script is:inline>
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        const el = document.documentElement;
+        const next = el.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        el.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+      });
+
+      // Mobile-Navigation (Off-Canvas-Drawer)
+      (() => {
+        const body = document.body;
+        const toggle = document.getElementById("nav-toggle");
+        const backdrop = document.getElementById("nav-backdrop");
+        const setOpen = (open) => {
+          body.classList.toggle("nav-open", open);
+          toggle?.setAttribute("aria-expanded", String(open));
+        };
+        toggle?.addEventListener("click", () => setOpen(!body.classList.contains("nav-open")));
+        backdrop?.addEventListener("click", () => setOpen(false));
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") setOpen(false);
+        });
+        // Beim Klick auf einen Navigations-Link schließen
+        document.querySelector(".sidebar")?.addEventListener("click", (e) => {
+          if (e.target.closest("a")) setOpen(false);
+        });
+      })();
+    </script>
   </body>
 </html>

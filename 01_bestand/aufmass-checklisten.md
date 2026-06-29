@@ -1,3 +1,9 @@
+---
+title: Aufmaß-Checklisten – Vor-Ort-Begehung
+typ: checkliste
+bereich: Bestand
+---
+
 # Aufmaß-Checklisten – Vor-Ort-Begehung
 
 > **Stand:** 2026-06-27

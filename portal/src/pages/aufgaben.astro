@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
 import { parseChecklist, parseTables } from "../lib/mdtable";
 import { statusClass, cleanStatus } from "../lib/status";
 import { titleFor } from "../lib/sections";
@@ -56,13 +57,13 @@ const adrs = docs
 
   <div class="grid cols-2">
     <div class="card">
-      <h3>🗒️ Backlog – offen <span class="count">{offen.length}</span></h3>
+      <h3 class="card-h"><Icon name="list-checks" size={17} /> Backlog – offen <span class="count">{offen.length}</span></h3>
       {
         offen.length ? (
-          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px">
+          <ul class="task-list">
             {offen.map((t) => (
-              <li style="display:flex; gap:9px; align-items:start; font-size:14px">
-                <span>☐</span><span>{t.text}</span>
+              <li class="task-row">
+                <Icon name="square" size={16} class="task-box" /><span>{t.text}</span>
               </li>
             ))}
           </ul>
@@ -76,21 +77,21 @@ const adrs = docs
             <summary class="muted" style="cursor:pointer; font-size:13px">
               {erledigt.length} erledigt
             </summary>
-            <ul style="list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px">
+            <ul class="task-list" style="margin-top:8px">
               {erledigt.map((t) => (
-                <li class="muted" style="font-size:13px; text-decoration:line-through">
-                  ☑ {t.text}
+                <li class="task-row done">
+                  <Icon name="square-check" size={16} class="task-box" /><span>{t.text}</span>
                 </li>
               ))}
             </ul>
           </details>
         )
       }
-      <div class="btn-row"><a class="btn" href="/docs/09_bauablauf/backlog">Backlog öffnen →</a></div>
+      <div class="btn-row"><a class="btn" href="/docs/09_bauablauf/backlog">Backlog öffnen <Icon name="arrow-right" size={15} /></a></div>
     </div>
 
     <div class="card">
-      <h3>❓ Offene Fragen <span class="count">{fragenAnzahl}</span></h3>
+      <h3 class="card-h"><Icon name="circle-help" size={17} /> Offene Fragen <span class="count">{fragenAnzahl}</span></h3>
       {
         fragenGruppen.map((g) => (
           <div style="margin-bottom:12px">
@@ -105,8 +106,8 @@ const adrs = docs
     </div>
   </div>
 
-  <h3 style="margin:30px 0 12px; display:flex; justify-content:space-between; align-items:center">
-    <span>✅ Entscheidungen (ADRs)</span>
+  <h3 style="margin:30px 0 12px; display:flex; justify-content:space-between; align-items:center; gap:10px">
+    <span class="card-h"><Icon name="circle-check" size={17} /> Entscheidungen (ADRs)</span>
     <a class="btn primary" style="font-size:13px" href="/admin/index.html#/collections/entscheidungen/new">+ Entscheidung</a>
   </h3>
   <div class="grid cols-3" style="margin-bottom:24px">
@@ -123,7 +124,7 @@ const adrs = docs
   {
     logTable && (
       <>
-        <h3 style="margin:24px 0 12px">📜 Entscheidungslog</h3>
+        <h3 class="card-h" style="margin:24px 0 12px"><Icon name="clipboard-list" size={17} /> Entscheidungslog</h3>
         <div class="card" style="padding:0; overflow:hidden">
           <table class="prose" style="margin:0; width:100%">
             <thead>

@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
 import { listMedia } from "../lib/media";
 
 const media = listMedia();
@@ -8,43 +9,43 @@ const bilder = media.filter((m) => m.kind === "bild");
 const pdfs = media.filter((m) => m.kind === "pdf");
 
 const groups = [
-  { title: "🗺️ Pläne & Grundrisse", items: plaene },
-  { title: "🖼️ Fotos & Bilder", items: bilder },
-  { title: "📄 PDF-Originale", items: pdfs },
+  { title: "Pläne & Grundrisse", icon: "layout-grid", items: plaene },
+  { title: "Fotos & Bilder", icon: "image", items: bilder },
+  { title: "PDF-Originale", icon: "files", items: pdfs },
 ].filter((g) => g.items.length > 0);
 ---
 
 <Base title="Pläne & Medien" current="medien" crumb="Pläne & Medien">
   <div class="page-head">
-    <p class="eyebrow">Originalunterlagen</p>
-    <h2>🖼️ Pläne &amp; Medien</h2>
+    <p class="eyebrow"><Icon name="image" size={13} /> Originalunterlagen</p>
+    <h2>Pläne &amp; Medien</h2>
     <p class="lead">{media.length} Dateien. Originale bleiben unverändert (AGENTS.md §2).</p>
   </div>
 
   <div class="card link" style="margin-bottom:26px; display:flex; align-items:center; gap:16px; border-color:var(--accent)">
-    <div style="font-size:34px">📐</div>
+    <span class="media-ico"><Icon name="ruler" size={22} /></span>
     <div style="flex:1">
       <h3 style="margin:0">Grundriss-Planung (RemPlanner)</h3>
       <span class="meta">Interaktive Raum- und Maßplanung – Quelle der abgelesenen Flächen.</span>
     </div>
-    <a class="btn primary" href="https://remplanner.com/planner/" target="_blank" rel="noopener">Planer öffnen ↗</a>
+    <a class="btn primary" href="https://remplanner.com/planner/" target="_blank" rel="noopener">Planer öffnen <Icon name="external-link" size={15} /></a>
   </div>
 
   {
     groups.map((g) => (
       <section style="margin-bottom:30px">
-        <h3 style="margin:0 0 12px">{g.title} <span class="count">{g.items.length}</span></h3>
+        <h3 class="card-h" style="margin:0 0 12px"><Icon name={g.icon} size={17} /> {g.title} <span class="count">{g.items.length}</span></h3>
         <div class="grid cols-3">
           {g.items.map((m) =>
             m.ext === ".pdf" ? (
-              <a class="card link" href={m.url} target="_blank" rel="noopener">
-                <div style="font-size:34px">📄</div>
+              <a class="card link pdf-card" href={m.url} target="_blank" rel="noopener">
+                <span class="media-ico"><Icon name="files" size={22} /></span>
                 <h3 style="font-size:14px; word-break:break-word">{m.name}</h3>
                 <span class="meta">{m.dir}</span>
               </a>
             ) : (
               <a class="card link" href={m.url} target="_blank" rel="noopener" style="padding:0; overflow:hidden">
-                <div style="aspect-ratio:4/3; background:#0c1117; display:grid; place-items:center">
+                <div style="aspect-ratio:4/3; background:var(--panel-2); display:grid; place-items:center">
                   <img src={m.url} alt={m.name} loading="lazy"
                     style="max-width:100%; max-height:100%; object-fit:contain; border:none; border-radius:0" />
                 </div>
@@ -62,3 +63,8 @@ const groups = [
 
   {media.length === 0 && <p class="empty">Keine Medien gefunden.</p>}
 </Base>
+
+<style>
+  .media-ico { width: 46px; height: 46px; flex: none; border-radius: 11px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+  .pdf-card { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+</style>

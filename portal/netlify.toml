@@ -1,0 +1,26 @@
+# Netlify-Deployment des Sanierungsportals.
+# Das Portal liegt im Repo-Unterordner portal/. Damit Netlify hier baut:
+#   Netlify-UI → Site configuration → Build & deploy → Base directory = "portal"
+# (Diese Datei liegt bewusst in portal/ und OHNE "base", damit der lokale
+#  `npm run dev` nicht bricht.)
+#
+# Der Astro-Netlify-Adapter erzeugt Functions automatisch (u.a. /api/checklist/save).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Environment-Variablen (Netlify-UI bzw. lokal in .env – siehe .env.example):
+#   Zugangsschutz (Edge Function netlify/edge-functions/auth.ts, Basic-Auth):
+#   PORTAL_USER      = <Benutzer>
+#   PORTAL_PASSWORD  = <Passwort>
+#   PORTAL_USERS     = user:pass,user2:pass2       (optional, mehrere Logins)
+#   Checkliste speichern:
+#   PORTAL_WRITE_KEY = <Schlüssel>                 (Pflicht, sonst 500 in Produktion)
+#   GITHUB_TOKEN     = <Fine-grained PAT, Contents: Read+Write>
+#   GITHUB_REPO      = <owner/repo>
+#   GITHUB_BRANCH    = main                        (optional, Default main)
+#   SITE_URL         = https://<deine-domain>      (optional)

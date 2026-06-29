@@ -1,6 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import { SECTIONS, sectionFor } from "../lib/sections";
+import { ROLES } from "../lib/roles";
+import Icon from "./Icon.astro";
 
 const { current } = Astro.props as { current?: string };
 
@@ -12,14 +14,14 @@ for (const d of docs) {
 }
 
 const topLinks = [
-  { href: "/", label: "Dashboard", icon: "📊", id: "dashboard" },
-  { href: "/zeitplan", label: "Zeitplan", icon: "📅", id: "zeitplan" },
-  { href: "/kosten", label: "Kosten", icon: "💶", id: "kosten" },
-  { href: "/checklisten", label: "Checklisten", icon: "✅", id: "checklisten" },
-  { href: "/aufgaben", label: "Aufgaben & Fragen", icon: "🗒️", id: "aufgaben" },
-  { href: "/medien", label: "Pläne & Medien", icon: "🖼️", id: "medien" },
-  { href: "/suche", label: "Suche", icon: "🔍", id: "suche" },
-  { href: "/admin/index.html", label: "Pflegen (CMS)", icon: "✏️", id: "cms" },
+  { href: "/", label: "Dashboard", icon: "layout-dashboard", id: "dashboard" },
+  { href: "/zeitplan", label: "Zeitplan", icon: "calendar", id: "zeitplan" },
+  { href: "/kosten", label: "Kosten", icon: "euro", id: "kosten" },
+  { href: "/checklisten", label: "Checklisten", icon: "square-check", id: "checklisten" },
+  { href: "/aufgaben", label: "Aufgaben & Fragen", icon: "list-checks", id: "aufgaben" },
+  { href: "/kontakte", label: "Kontakte", icon: "contact", id: "kontakte" },
+  { href: "/medien", label: "Pläne & Medien", icon: "image", id: "medien" },
+  { href: "/admin/index.html", label: "Pflegen (CMS)", icon: "pencil", id: "cms" },
 ];
 
 const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) ?? 0) > 0).sort(
@@ -27,9 +29,9 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
 );
 ---
 
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <a class="brand" href="/">
-    <span class="logo">🏡</span>
+    <span class="logo"><Icon name="home" size={20} /></span>
     <div>
       <h1>Ferienhaus Fürstenau</h1>
       <small>Sanierungszentrale</small>
@@ -44,8 +46,18 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
     {
       topLinks.map((l) => (
         <a href={l.href} class={current === l.id ? "active" : ""}>
-          <span class="ico">{l.icon}</span>
+          <span class="ico"><Icon name={l.icon} /></span>
           <span>{l.label}</span>
+        </a>
+      ))
+    }
+
+    <div class="group-label">Rollen</div>
+    {
+      ROLES.map((r) => (
+        <a href={`/fuer/${r.key}`} class={current === `rolle-${r.key}` ? "active" : ""}>
+          <span class="ico"><Icon name={r.icon} /></span>
+          <span>{r.label}</span>
         </a>
       ))
     }
@@ -54,7 +66,7 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
     {
       bereiche.map((s) => (
         <a href={`/bereich/${s.key}`} class={current === s.key ? "active" : ""}>
-          <span class="ico">{s.icon}</span>
+          <span class="ico"><Icon name={s.icon} /></span>
           <span>{s.label}</span>
           <span class="count">{counts.get(s.key)}</span>
         </a>

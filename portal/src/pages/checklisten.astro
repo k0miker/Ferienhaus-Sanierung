@@ -1,139 +1,94 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
-import { parseChecklist } from "../lib/mdtable";
+import Icon from "../components/Icon.astro";
+import { parseChecklistDoc, checklistSlug } from "../lib/checklist";
+import { titleFor, sectionFor } from "../lib/sections";
 
 const docs = await getCollection("docs");
-const clDoc = docs.find((d) => d.id === "01_bestand/aufmass-checklisten");
-const body = clDoc?.body ?? "";
+const checklisten = docs
+  .filter((d) => d.data.typ === "checkliste")
+  .map((d) => {
+    const { sections, totalChecks } = parseChecklistDoc(d.body ?? "");
+    return {
+      slug: checklistSlug(d.id),
+      title: titleFor(d),
+      bereich: sectionFor(d.id),
+      sectionCount: sections.length,
+      totalChecks,
+      icon: sections[0]?.icon ?? "clipboard-list",
+    };
+  })
+  .sort((a, b) => a.bereich.order - b.bereich.order || a.title.localeCompare(b.title));
 
-interface CheckGroup {
-  titel: string;
-  icon: string;
-  items: { done: boolean; text: string }[];
-}
-
-const gruppen: CheckGroup[] = [];
-let cur: CheckGroup | null = null;
-for (const line of body.split("\n")) {
-  const h2 = line.match(/^##\s+\d+\.\s+(.*)$/);
-  if (h2) {
-    const titel = h2[1].trim();
-    const icon = titel.includes("Raum") ? "📏" :
-      titel.includes("Fenster") ? "🪟" :
-      titel.includes("Außenwand") || titel.includes("Fassade") ? "🧱" :
-      titel.includes("Dach") ? "🏠" :
-      titel.includes("PV") ? "☀️" :
-      titel.includes("Elektro") ? "⚡" :
-      titel.includes("Heizung") || titel.includes("Warmwasser") ? "🔥" :
-      titel.includes("Wanddurchbruch") ? "🔨" :
-      titel.includes("Foto") ? "📷" :
-      titel.includes("Ausrüstung") || titel.includes("Pack") ? "🎒" : "📋";
-    cur = { titel, icon, items: [] };
-    gruppen.push(cur);
-  }
-  if (cur) {
-    const m = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(.*)$/);
-    if (m) cur.items.push({ done: m[1].toLowerCase() === "x", text: m[2].trim() });
-  }
-}
-
-const total = gruppen.reduce((s, g) => s + g.items.length, 0);
-const done = gruppen.reduce((s, g) => s + g.items.filter((i) => i.done).length, 0);
-const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+const gesamtChecks = checklisten.reduce((s, c) => s + c.totalChecks, 0);
 ---
 
-<Base title="Checklisten" current="checklisten" crumb="Aufmaß-Checklisten">
+<Base title="Checklisten" current="checklisten" crumb="Checklisten">
   <div class="page-head">
-    <p class="eyebrow">Vor-Ort-Begehung</p>
-    <h2>Aufmaß-Checklisten</h2>
+    <p class="eyebrow"><Icon name="square-check" size={13} /> Erfassung &amp; Begehung</p>
+    <h2>Checklisten</h2>
     <p class="lead">
-      {total} Prüfpunkte in {gruppen.length} Bereichen.
-      Diese Checklisten vor dem nächsten Besuch ausdrucken oder auf dem Smartphone nutzen.
+      {checklisten.length} Checklisten mit insgesamt {gesamtChecks} Prüfpunkten. Direkt im Browser
+      abhaken und ausfüllen – mit „Speichern" wird die ausgefüllte Liste in die Projektakte
+      geschrieben (versioniert in Git). Neue Checkliste? Markdown-Datei mit Frontmatter
+      <code>typ: checkliste</code> anlegen.
     </p>
-    <div class="btn-row">
-      <a class="btn" href="/docs/01_bestand/aufmass-checklisten">Markdown-Version</a>
-    </div>
   </div>
 
-  <!-- Fortschrittsbalken -->
-  <div class="card" style="margin-bottom:22px">
-    <h3>Erfassungsfortschritt
-      <span style="float:right; font-weight:400; font-size:13px" class="muted">{done} / {total} erledigt</span>
-    </h3>
-    <div style="height:14px; border-radius:8px; background:var(--panel-2); overflow:hidden; margin:8px 0">
-      <div style={`height:100%; width:${pct}%; background:var(--accent); transition:width 0.3s`}></div>
-    </div>
-  </div>
-
-  <!-- Checklisten-Karten -->
-  <div class="grid cols-2">
-    {gruppen.map((g) => {
-      const gDone = g.items.filter((i) => i.done).length;
-      const gPct = g.items.length > 0 ? Math.round((gDone / g.items.length) * 100) : 0;
-      return (
-        <div class="card cl-card">
-          <h3 style="display:flex; justify-content:space-between; align-items:center">
-            <span>{g.icon} {g.titel}</span>
-            <span class={`badge ${gPct === 100 ? "ok" : gPct > 0 ? "info" : "warn"}`}>
-              {gDone}/{g.items.length}
-            </span>
-          </h3>
-          <div style="height:6px; border-radius:4px; background:var(--panel-2); overflow:hidden; margin:8px 0 12px">
-            <div style={`height:100%; width:${gPct}%; background:${gPct === 100 ? "var(--ok)" : "var(--accent)"}`}></div>
+  {checklisten.length === 0 ? (
+    <p class="empty">
+      Noch keine Checklisten. Lege eine Markdown-Datei mit <code>typ: checkliste</code> im
+      Frontmatter an (z.&nbsp;B. in <code>01_bestand/</code>).
+    </p>
+  ) : (
+    <div class="grid cols-2">
+      {checklisten.map((c) => (
+        <a class="card link cl-card" href={`/checklisten/${c.slug}`}>
+          <div class="cl-card-top">
+            <span class="cl-card-ico"><Icon name={c.icon} size={20} /></span>
+            <span class="badge" data-cl-badge={c.slug}>0/{c.totalChecks}</span>
           </div>
-          <ul class="cl-list">
-            {g.items.map((item) => (
-              <li class={item.done ? "done" : ""}>
-                <span class="cl-check">{item.done ? "☑" : "☐"}</span>
-                <span>{item.text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-    })}
-  </div>
+          <h3>{c.title}</h3>
+          <div class="cl-bar"><div class="cl-bar-fill" data-cl-fill={c.slug} style="width:0%"></div></div>
+          <span class="meta">
+            <Icon name={c.bereich.icon} size={13} /> {c.bereich.label} · {c.sectionCount} Abschnitte · {c.totalChecks} Prüfpunkte
+          </span>
+        </a>
+      ))}
+    </div>
+  )}
 
-  <div class="card" style="margin-top:24px; border-color:var(--accent)">
-    <h3>Hinweise zur Vor-Ort-Begehung</h3>
-    <ul style="margin:0; padding-left:18px; font-size:14px; display:flex; flex-direction:column; gap:6px">
-      <li>Alle Maße als <span class="q-tag" style="background:#16263a;color:#c4e2ff">ABGELESEN</span> kennzeichnen und später am Original prüfen.</li>
-      <li>Zu jedem Punkt Fotos machen – Dateiname: Raum + Gegenstand.</li>
-      <li>Grundrissplan als Ausdruck mitnehmen und Maße einzeichnen.</li>
-      <li>Steckdosentester mitnehmen für Erdungsprüfung.</li>
-      <li>Dachboden nur mit Taschenlampe und Vorsicht betreten.</li>
-    </ul>
-  </div>
+  <script>
+    // Fortschritt je Karte aus localStorage (gleiche Keys wie Detailseite).
+    document.querySelectorAll<HTMLElement>("[data-cl-fill]").forEach((fill) => {
+      const slug = fill.dataset.clFill!;
+      let state: Record<string, unknown> = {};
+      try {
+        state = JSON.parse(localStorage.getItem("checklist:" + slug + ":v1") || "{}");
+      } catch {}
+      const badge = document.querySelector<HTMLElement>(`[data-cl-badge="${slug}"]`);
+      const total = Number(badge?.textContent?.split("/")[1] ?? 0);
+      const done = Object.values(state).filter((v) => v === true).length;
+      const capped = Math.min(done, total);
+      fill.style.width = (total ? Math.round((capped / total) * 100) : 0) + "%";
+      if (badge) {
+        badge.textContent = `${capped}/${total}`;
+        badge.className = "badge " + (total && capped >= total ? "ok" : capped > 0 ? "info" : "");
+      }
+    });
+  </script>
 </Base>
 
 <style>
-  .cl-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-height: 320px;
-    overflow-y: auto;
+  .cl-card { display: flex; flex-direction: column; gap: 10px; }
+  .cl-card-top { display: flex; align-items: center; justify-content: space-between; }
+  .cl-card-ico {
+    width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent);
   }
-  .cl-list li {
-    display: flex;
-    gap: 8px;
-    align-items: start;
-    font-size: 13.5px;
-    line-height: 1.4;
-    padding: 3px 0;
-  }
-  .cl-list li.done {
-    color: var(--muted);
-    text-decoration: line-through;
-  }
-  .cl-check {
-    flex-shrink: 0;
-    width: 16px;
-    text-align: center;
-    font-size: 14px;
-  }
+  .cl-card h3 { margin: 0; }
+  .cl-card .meta { display: flex; align-items: center; gap: 6px; }
+  .cl-bar { height: 8px; border-radius: 6px; background: var(--panel-2); overflow: hidden; }
+  .cl-bar-fill { height: 100%; background: var(--accent); transition: width 0.25s ease; }
 </style>

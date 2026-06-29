@@ -125,13 +125,14 @@ const schritte = [
 ];
 
 const phasen = [...new Set(schritte.map((s) => s.phase))];
+// Mitteltöne: lesbar auf hellem und dunklem Hintergrund (Phasen-Chips)
 const phasenFarbe: Record<string, string> = {
-  Vorbereitung: "#5aa9e6",
-  Planung: "#7ed0a3",
-  Angebote: "#f5c451",
-  Entscheidung: "#e09cf0",
-  Förderung: "#f5c451",
-  Ausführung: "#ef6a6a",
+  Vorbereitung: "#2563eb",
+  Planung: "#0891b2",
+  Angebote: "#b45309",
+  Entscheidung: "#7c3aed",
+  Förderung: "#ca8a04",
+  Ausführung: "#dc2626",
 };
 
 const statusFarbe = (s: string) => {
