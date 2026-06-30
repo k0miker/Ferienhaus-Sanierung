@@ -12,6 +12,14 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Secret-Scanner: Ausnahmen für NICHT-geheime Variablen, deren Werte sonst
+  # überall im Build vorkommen (z.B. "main" als package.json-Feld / class="main",
+  # "besitzer" als Rollen-Slug, die Domain in Canonical-Links). Die echten
+  # Geheimnisse (GITHUB_TOKEN, PORTAL_PASSWORD, PORTAL_WRITE_KEY, PORTAL_USERS)
+  # bleiben weiter im Scan – sie landen nur zur Laufzeit in den Functions, nie im HTML.
+  SECRETS_SCAN_OMIT_KEYS = "GITHUB_BRANCH,GITHUB_REPO,SITE_URL,PORTAL_USER"
+  # Netlify-eigene Build-Plugins und Abhängigkeiten nicht scannen (Fehlalarme).
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/**,node_modules/**"
 
 # Environment-Variablen (Netlify-UI bzw. lokal in .env – siehe .env.example):
 #   Zugangsschutz (Edge Function netlify/edge-functions/auth.ts, Basic-Auth):
