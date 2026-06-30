@@ -161,6 +161,7 @@ const nav = [
 
 <style>
   .cmdk { position: fixed; inset: 0; z-index: 50; display: flex; justify-content: center; align-items: flex-start; }
+  .cmdk[hidden] { display: none; } /* sonst überschreibt display:flex das hidden-Attribut */
   .cmdk-backdrop { position: absolute; inset: 0; border: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px); }
   .cmdk-panel {
     position: relative; margin-top: 12vh; width: min(620px, 92vw);
