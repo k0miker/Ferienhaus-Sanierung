@@ -24,7 +24,8 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const raw = await readAkteFile(FILE);
-    const lines = raw.split("\n");
+    // CRLF-tolerant einlesen; geschrieben wird einheitlich mit LF.
+    const lines = raw.split(/\r?\n/);
 
     // Aufgabenzeile finden (Checkbox-Zustand egal)
     const idx = lines.findIndex((l) => {
