@@ -15,7 +15,9 @@ const env = (k: string): string | undefined =>
 const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 
-const MODEL = () => env("CHAT_MODEL") || "claude-opus-4-8";
+// Haiku 4.5: günstig und schnell, 200k Kontext reicht für die ganze Akte.
+// Über CHAT_MODEL jederzeit auf ein stärkeres Modell umstellbar.
+const MODEL = () => env("CHAT_MODEL") || "claude-haiku-4-5";
 const MAX_TURNS = 24; // Verlauf begrenzen (Kosten/Kontext)
 const MAX_MSG_CHARS = 4000;
 
@@ -29,7 +31,8 @@ Regeln:
 - Beachte die Evidenz-Kennzeichnung der Akte ([BELEGT], [ABGELESEN], [ANGABE], [ANNAHME], [OFFEN], [WIDERSPRUCH]): Gib Unsicheres als unsicher wieder; ist etwas offen oder widersprüchlich, sage das ausdrücklich statt eine Version auszuwählen.
 - Nenne am Ende der Antwort die Quelldatei(en), auf die du dich stützt (z. B. „Quelle: 02_gebaeudehuelle/fensterliste.md").
 - Stelle fachliche Prüfungen (Statik, Elektro, Feuchte, Förderfähigkeit …) nie als entbehrlich dar.
-- Wenn die Akte zu einer Frage nichts hergibt, sage das klar, statt zu raten – und nenne, wo/wie die Information beschafft werden könnte, falls die Akte dazu einen nächsten Schritt kennt.`;
+- Wenn die Akte zu einer Frage nichts hergibt, sage das klar, statt zu raten – und nenne, wo/wie die Information beschafft werden könnte, falls die Akte dazu einen nächsten Schritt kennt.
+- Formatierung: kurze Absätze, **Fettdruck** für Kernaussagen, Spiegelstrich-Listen. Keine Markdown-Tabellen, keine #-Überschriften.`;
 
 let corpusCache: string | null = null;
 
@@ -77,10 +80,11 @@ export const POST: APIRoute = async ({ request }) => {
   const corpus = await buildCorpus();
   const client = new Anthropic({ apiKey });
 
+  // Kein thinking-Parameter: läuft so auf allen Modellen (Haiku kennt kein
+  // "adaptive"; Opus/Sonnet laufen ohne Angabe schlicht ohne Thinking).
   const stream = client.messages.stream({
     model: MODEL(),
     max_tokens: 4096,
-    thinking: { type: "adaptive" },
     system: [
       { type: "text", text: ANWEISUNG },
       { type: "text", text: corpus, cache_control: { type: "ephemeral" } },

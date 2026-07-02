@@ -102,7 +102,7 @@ export const ROLES: RoleView[] = [
     tagline: "Der volle Überblick: Status, Budget, Entscheidungen, Förderung.",
     stats: ["budget", "tasks", "fragen", "adrs"],
     werkzeuge: [
-      { href: "/", label: "Dashboard", icon: "layout-dashboard", desc: "Ampel, Blocker, Maßnahmen" },
+      { href: "/status", label: "Projektstand", icon: "clipboard-list", desc: "Ampel, Blocker, Maßnahmen" },
       { href: "/kosten", label: "Kosten", icon: "euro", desc: "Budget & Förderung" },
       { href: "/aufgaben", label: "Entscheidungen", icon: "circle-check", desc: "ADRs & offene Fragen" },
       { href: "/hochladen", label: "Hochladen", icon: "upload", desc: "Dokumente & Fotos in die Akte" },

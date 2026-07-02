@@ -9,15 +9,16 @@ import { SECTIONS } from "../lib/sections";
 import { ROLES } from "../lib/roles";
 
 const nav = [
-  { url: "/", title: "Dashboard", section: "Seite", icon: "layout-dashboard" },
+  { url: "/", title: "Start", section: "Seite", icon: "home" },
+  { url: "/status", title: "Projektstand", section: "Seite", icon: "clipboard-list" },
   { url: "/zeitplan", title: "Zeitplan", section: "Seite", icon: "calendar-days" },
   { url: "/kosten", title: "Kosten", section: "Seite", icon: "euro" },
   { url: "/checklisten", title: "Checklisten", section: "Seite", icon: "square-check" },
   { url: "/aufgaben", title: "Aufgaben & Fragen", section: "Seite", icon: "list-checks" },
   { url: "/kontakte", title: "Kontakte", section: "Seite", icon: "contact" },
-  { url: "/medien", title: "Pläne & Medien", section: "Seite", icon: "image" },
+  { url: "/medien", title: "Fotos & Pläne", section: "Seite", icon: "image" },
   { url: "/hochladen", title: "Hochladen", section: "Seite", icon: "upload" },
-  { url: "/assistent", title: "KI-Assistent", section: "Seite", icon: "bot" },
+  { url: "/assistent", title: "Fragen stellen (KI-Assistent)", section: "Seite", icon: "bot" },
   { url: "/suche", title: "Suche", section: "Seite", icon: "search" },
   ...ROLES.map((r) => ({ url: `/fuer/${r.key}`, title: `Für ${r.label}`, section: "Rolle", icon: r.icon })),
   ...SECTIONS.filter((s) => s.key !== "_root").map((s) => ({

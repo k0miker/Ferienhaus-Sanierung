@@ -2,265 +2,138 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Icon from "../components/Icon.astro";
-import { titleFor, sectionFor, SECTIONS } from "../lib/sections";
-import { tableUnderHeading, ampelOf, parseChecklist } from "../lib/mdtable";
-import { statusClass, cleanStatus } from "../lib/status";
-import { KOSTEN_GRUPPEN } from "../content.config";
+import { tableUnderHeading, ampelOf } from "../lib/mdtable";
 import { ROLES } from "../lib/roles";
 
+// Kompakter Projektstand-Teaser aus PROJEKTSTATUS.md
 const docs = await getCollection("docs");
-const positionen = await getCollection("kosten");
-// IDs werden vom Glob-Loader kleingeschrieben → case-insensitives Lookup.
 const byId = new Map(docs.map((d) => [d.id.toLowerCase(), d]));
-const status = byId.get("projektstatus");
-const body = status?.body ?? "";
-
-// Gesamtstatus-Zeile (Blockquote am Anfang)
+const body = byId.get("projektstatus")?.body ?? "";
 const stand = body.match(/\*\*Stand:\*\*\s*([0-9-]+)/)?.[1];
-const gesamt = body.match(/\*\*Gesamtstatus:\*\*\s*(.+)/)?.[1]?.replace(/[🟡🟢🔴]/g, "").trim();
 
-// Projektampel (§15)
 const ampel = tableUnderHeading(body, /Projektampel/i);
-const ampelRows = (ampel?.rows ?? []).map((r) => ({
-  bereich: r[0],
-  farbe: ampelOf(r[1] ?? ""),
-  grund: r[2] ?? "",
-}));
 const counts = { rot: 0, gelb: 0, gruen: 0 };
-for (const r of ampelRows) if (r.farbe) counts[r.farbe]++;
+for (const r of ampel?.rows ?? []) {
+  const f = ampelOf(r[1] ?? "");
+  if (f) counts[f]++;
+}
 
-// Maßnahmenstatus (§6)
-const massn = tableUnderHeading(body, /Bauteile und Maßnahmenstatus|Maßnahmenstatus/i);
-const massnRows = (massn?.rows ?? []).map((r) => ({
-  bereich: r[0],
-  status: cleanStatus(r[1] ?? ""),
-  next: r[2] ?? "",
-}));
-
-// Kritische Blocker (§12 nummerierte Liste)
 const blockerMatch = body.match(/##\s*\d+\.\s*Kritische Blocker\s*\n([\s\S]*?)(?=\n##\s)/i);
 const blocker = (blockerMatch?.[1] ?? "")
   .split("\n")
   .map((l) => l.match(/^\s*\d+\.\s+(.*)$/)?.[1]?.trim())
   .filter((x): x is string => Boolean(x))
-  .slice(0, 6);
+  .slice(0, 3);
 
-// Kosten-Zusammenfassung
-const euro = (n: number) =>
-  n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const istFoerderung = (g: string) => g.startsWith("Förderung");
-const geplant = positionen.reduce((s, p) => istFoerderung(p.data.gruppe) ? s : s + p.data.betrag, 0);
-const bezahlt = positionen.filter((p) => p.data.gruppe === "bezahlt").reduce((s, p) => s + p.data.betrag, 0);
-const BUDGET_MAX = 100000;
-const budgetPct = Math.min(100, Math.round((geplant / BUDGET_MAX) * 100));
-const budgetAmpel = geplant === 0 ? "" : geplant <= 80000 ? "gruen" : geplant <= 100000 ? "gelb" : "rot";
-
-// Backlog-Zusammenfassung
-const backlog = byId.get("09_bauablauf/backlog");
-const tasks = backlog ? parseChecklist(backlog.body ?? "") : [];
-const offeneTasks = tasks.filter((t) => !t.done).length;
-
-// Checklisten-Zusammenfassung
-const clDoc = docs.find((d) => d.id === "01_bestand/aufmass-checklisten");
-const clItems = clDoc ? parseChecklist(clDoc.body ?? "") : [];
-const clDone = clItems.filter((i) => i.done).length;
-const clTotal = clItems.length;
-
-// Schnellzugriff auf Schlüsseldokumente
-const quick = [
-  { id: "projektstatus", icon: "clipboard-list" },
-  { id: "00_projekt/offene-fragen", icon: "circle-help" },
-  { id: "00_projekt/massnahmenplan", icon: "layout-grid" },
-  { id: "06_kosten/kostenplan", icon: "euro" },
-  { id: "09_bauablauf/backlog", icon: "list-checks" },
-  { id: "08_entscheidungen/adr-001-fenster", icon: "circle-check" },
-].filter((q) => byId.has(q.id));
-
-const ampelWort = { rot: "Rot", gelb: "Gelb", gruen: "Grün" } as const;
-
-const facts = [
-  { label: "Baujahr", value: "1978" },
-  { label: "Budgetrahmen", value: "60–100 T€" },
-  { label: "Energiebedarf", value: "287,8 kWh/m²a" },
-  { label: "Dokumente", value: String(docs.length) },
+// Die vier Dinge, die man hier tun kann – in Alltagssprache.
+const aktionen = [
+  {
+    href: "/assistent",
+    icon: "bot",
+    label: "Eine Frage stellen",
+    desc: "Der Assistent kennt die ganze Projektakte und antwortet sofort – mit Quellenangabe.",
+  },
+  {
+    href: "/hochladen",
+    icon: "upload",
+    label: "Foto oder Dokument abgeben",
+    desc: "Baustellenfotos, Angebote, Pläne – landet automatisch sortiert in der Akte.",
+  },
+  {
+    href: "/medien",
+    icon: "image",
+    label: "Fotos & Pläne ansehen",
+    desc: "Alle Grundrisse, Fotos und PDF-Unterlagen an einem Ort.",
+  },
+  {
+    href: "/checklisten",
+    icon: "square-check",
+    label: "Checkliste ausfüllen",
+    desc: "Maße und Prüfpunkte direkt vor Ort erfassen und speichern.",
+  },
 ];
 ---
 
-<Base title="Dashboard" current="dashboard">
+<Base title="Start" current="dashboard">
   <div class="page-head">
-    <p class="eyebrow">Sanierungsprojekt · Stand {stand ?? "—"}</p>
-    <h2>Übersicht</h2>
-    {gesamt && <p class="lead">{gesamt}</p>}
+    <p class="eyebrow">Ferienhaus Fürstenau · Sanierung</p>
+    <h2>Was möchtest du tun?</h2>
+    <p class="lead">
+      Hier arbeiten Besitzer, Energieberater, Bauleitung und Handwerker mit
+      denselben Unterlagen – nichts geht verloren, alles ist nachlesbar.
+    </p>
   </div>
 
-  <!-- Rollen-Einstieg: das Portal als Schnittstelle für alle Beteiligten -->
-  <div class="card role-entry">
-    <div class="role-entry-head">
-      <span class="role-entry-eyebrow"><Icon name="contact" size={13} /> Ich bin …</span>
-      <span class="muted" style="font-size:12.5px">Schnittstelle für Bauleitung, Energieberater &amp; Handwerker</span>
-    </div>
-    <div class="role-entry-grid">
-      {ROLES.map((r) => (
-        <a class="role-tile" href={`/fuer/${r.key}`}>
-          <span class="role-tile-ico"><Icon name={r.icon} size={20} /></span>
-          <b>{r.label}</b>
-          <span class="meta">{r.short}</span>
-        </a>
-      ))}
-    </div>
+  <!-- Hauptaktionen -->
+  <div class="start-grid">
+    {aktionen.map((a) => (
+      <a class="start-tile" href={a.href}>
+        <span class="start-ico"><Icon name={a.icon} size={24} /></span>
+        <b>{a.label}</b>
+        <span class="meta">{a.desc}</span>
+        <span class="start-arrow"><Icon name="arrow-right" size={16} /></span>
+      </a>
+    ))}
   </div>
 
-  <div class="grid cols-4" style="margin-bottom:22px">
-    {
-      facts.map((f) => (
-        <div class="card stat">
-          <span class="label">{f.label}</span>
-          <span class="value">{f.value}</span>
-        </div>
-      ))
-    }
+  <!-- Rollen-Einstieg -->
+  <h2 class="section-head">Ich bin …</h2>
+  <div class="role-entry-grid">
+    {ROLES.map((r) => (
+      <a class="role-tile" href={`/fuer/${r.key}`}>
+        <span class="role-tile-ico"><Icon name={r.icon} size={20} /></span>
+        <b>{r.label}</b>
+        <span class="meta">{r.short}</span>
+      </a>
+    ))}
   </div>
 
-  <div class="grid cols-2">
-    <!-- Projektampel -->
-    <div class="card">
-      <h3 style="display:flex; align-items:center; justify-content:space-between">
-        <span>Projektampel</span>
-        <span class="muted" style="display:flex; gap:10px; font-size:13px; font-weight:600">
-          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel rot">✕</span> {counts.rot}</span>
-          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel gelb">!</span> {counts.gelb}</span>
-          <span style="display:inline-flex; align-items:center; gap:4px"><span class="ampel gruen">✓</span> {counts.gruen}</span>
-        </span>
-      </h3>
-      {
-        ampelRows.length ? (
-          <div style="display:flex; flex-direction:column; gap:8px">
-            {ampelRows.map((r) => (
-              <div style="display:flex; align-items:center; gap:10px; font-size:14px">
-                <span class={`ampel ${r.farbe ?? ""}`} title={r.farbe ? ampelWort[r.farbe] : ""}>
-                  {r.farbe === "rot" ? "✕" : r.farbe === "gelb" ? "!" : r.farbe === "gruen" ? "✓" : ""}
-                </span>
-                <b style="min-width:150px">{r.bereich}</b>
-                <span class="muted" style="font-size:13px">{r.grund}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p class="empty">Keine Ampel-Tabelle gefunden.</p>
-        )
-      }
+  <!-- Kompakter Projektstand -->
+  <h2 class="section-head">Wie steht das Projekt?</h2>
+  <div class="card status-teaser">
+    <div class="status-teaser-top">
+      <span class="muted" style="font-size:13px">Stand {stand ?? "—"}</span>
+      <span class="status-counts">
+        <span><span class="ampel gruen">✓</span> {counts.gruen} gut</span>
+        <span><span class="ampel gelb">!</span> {counts.gelb} in Arbeit</span>
+        <span><span class="ampel rot">✕</span> {counts.rot} kritisch</span>
+      </span>
     </div>
-
-    <!-- Kritische Blocker -->
-    <div class="card">
-      <h3 style="display:flex; align-items:center; gap:8px"><Icon name="construction" size={17} /> Kritische Blocker</h3>
-      {
-        blocker.length ? (
-          <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; font-size:14px">
-            {blocker.map((b) => <li>{b}</li>)}
-          </ol>
-        ) : (
-          <p class="empty">Keine Blocker gelistet.</p>
-        )
-      }
-      <div class="btn-row">
-        <a class="btn" href="/docs/projektstatus">Voller Projektstatus <Icon name="arrow-right" size={15} /></a>
+    {blocker.length > 0 && (
+      <div class="status-blocker">
+        <b>Wichtigste offene Punkte:</b>
+        <ol>
+          {blocker.map((b) => <li>{b}</li>)}
+        </ol>
       </div>
+    )}
+    <div class="btn-row">
+      <a class="btn primary" href="/status">Zum vollen Projektstand <Icon name="arrow-right" size={15} /></a>
+      <a class="btn" href="/kosten">Kosten</a>
+      <a class="btn" href="/zeitplan">Zeitplan</a>
     </div>
-  </div>
-
-  <!-- Maßnahmenstatus -->
-  <h2 class="section-head">Maßnahmen &amp; Gewerke</h2>
-  <div class="card" style="padding:0; overflow:hidden">
-    {
-      massnRows.length ? (
-        <table class="prose" style="margin:0; width:100%">
-          <thead>
-            <tr><th>Bereich</th><th>Status</th><th>Nächster Schritt</th></tr>
-          </thead>
-          <tbody>
-            {massnRows.map((r) => (
-              <tr>
-                <td><b>{r.bereich}</b></td>
-                <td><span class={`badge ${statusClass(r.status)}`}>{r.status}</span></td>
-                <td class="muted">{r.next}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p class="empty">Keine Maßnahmentabelle gefunden.</p>
-      )
-    }
-  </div>
-
-  <!-- Kosten & Fortschritt -->
-  <h2 class="section-head">Budget &amp; Fortschritt</h2>
-  <div class="grid cols-2" style="margin-bottom:22px">
-    <!-- Budget -->
-    <div class="card">
-      <h3 style="display:flex; justify-content:space-between; align-items:center">
-        <span>Budget</span>
-        <span class={`badge ${budgetAmpel === "rot" ? "bad" : budgetAmpel === "gelb" ? "warn" : "ok"}`}>
-          {geplant === 0 ? "leer" : `${euro(geplant)} / 100 T€`}
-        </span>
-      </h3>
-      <div style="height:10px; border-radius:6px; background:var(--panel-2); overflow:hidden; margin:8px 0">
-        <div style={`height:100%; width:${budgetPct}%; background:var(--${budgetAmpel === "rot" ? "bad" : budgetAmpel === "gelb" ? "warn" : "ok"})`}></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; font-size:12px" class="muted">
-        <span>{positionen.length} Positionen</span>
-        <span>davon {euro(bezahlt)} bezahlt</span>
-      </div>
-      <div class="btn-row">
-        <a class="btn" href="/kosten">Kosten im Detail</a>
-      </div>
-    </div>
-
-    <!-- Aufmaß-Fortschritt -->
-    <div class="card">
-      <h3 style="display:flex; justify-content:space-between; align-items:center">
-        <span>Vor-Ort-Erfassung</span>
-        <span class={`badge ${clDone === clTotal && clTotal > 0 ? "ok" : "warn"}`}>
-          {clDone}/{clTotal}
-        </span>
-      </h3>
-      <div style="height:10px; border-radius:6px; background:var(--panel-2); overflow:hidden; margin:8px 0">
-        <div style={`height:100%; width:${clTotal > 0 ? Math.round((clDone / clTotal) * 100) : 0}%; background:var(--accent)`}></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; font-size:12px" class="muted">
-        <span>{offeneTasks} offene Aufgaben</span>
-        <span>{clTotal} Prüfpunkte</span>
-      </div>
-      <div class="btn-row">
-        <a class="btn" href="/checklisten">Checklisten</a>
-        <a class="btn" href="/zeitplan">Zeitplan</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Schnellzugriff -->
-  <h2 class="section-head">Schnellzugriff</h2>
-  <div class="grid cols-3">
-    {
-      quick.map((q) => {
-        const d = byId.get(q.id)!;
-        return (
-          <a class="card link" href={`/docs/${d.id}`}>
-            <h3 style="display:flex; align-items:center; gap:8px"><Icon name={q.icon} size={17} /> {titleFor(d)}</h3>
-            <span class="meta">{sectionFor(d.id).label}</span>
-          </a>
-        );
-      })
-    }
   </div>
 </Base>
 
 <style>
-  .role-entry { margin-bottom: 22px; padding: var(--s-4) var(--s-5) var(--s-5); }
-  .role-entry-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-  .role-entry-eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; display: inline-flex; align-items: center; gap: 6px; }
-  .role-entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s-3); }
+  .start-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 8px; }
+  .start-tile {
+    position: relative; display: flex; flex-direction: column; gap: 6px;
+    padding: 20px 18px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel); color: var(--text);
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+  .start-tile:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-2px); text-decoration: none; }
+  .start-ico {
+    width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 13%, transparent); color: var(--accent); margin-bottom: 6px;
+  }
+  .start-tile b { color: var(--heading); font-size: 16px; }
+  .start-tile .meta { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .start-arrow { position: absolute; top: 20px; right: 16px; color: var(--muted); }
+  .start-tile:hover .start-arrow { color: var(--accent); }
+
+  .role-entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
   .role-tile {
     display: flex; flex-direction: column; gap: 4px; padding: 14px;
     border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -271,4 +144,11 @@ const facts = [
   .role-tile-ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); margin-bottom: 4px; }
   .role-tile b { color: var(--heading); }
   .role-tile .meta { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+
+  .status-teaser { display: flex; flex-direction: column; gap: 12px; }
+  .status-teaser-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .status-counts { display: flex; gap: 14px; font-size: 13px; font-weight: 600; }
+  .status-counts > span { display: inline-flex; align-items: center; gap: 5px; }
+  .status-blocker { font-size: 14px; }
+  .status-blocker ol { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
 </style>

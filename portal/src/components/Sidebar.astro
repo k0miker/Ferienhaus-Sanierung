@@ -13,17 +13,21 @@ for (const d of docs) {
   counts.set(key, (counts.get(key) ?? 0) + 1);
 }
 
-const topLinks = [
-  { href: "/", label: "Dashboard", icon: "layout-dashboard", id: "dashboard" },
-  { href: "/zeitplan", label: "Zeitplan", icon: "calendar", id: "zeitplan" },
-  { href: "/kosten", label: "Kosten", icon: "euro", id: "kosten" },
+const topLinks = [{ href: "/", label: "Start", icon: "home", id: "dashboard" }];
+
+// Gruppen in Alltagssprache – zuerst das, was man TUT, dann das, was man LIEST.
+const machen = [
+  { href: "/assistent", label: "Fragen stellen", icon: "bot", id: "assistent" },
+  { href: "/hochladen", label: "Hochladen", icon: "upload", id: "hochladen" },
   { href: "/checklisten", label: "Checklisten", icon: "square-check", id: "checklisten" },
+];
+const nachschlagen = [
+  { href: "/status", label: "Projektstand", icon: "clipboard-list", id: "status" },
+  { href: "/medien", label: "Fotos & Pläne", icon: "image", id: "medien" },
+  { href: "/kosten", label: "Kosten", icon: "euro", id: "kosten" },
+  { href: "/zeitplan", label: "Zeitplan", icon: "calendar", id: "zeitplan" },
   { href: "/aufgaben", label: "Aufgaben & Fragen", icon: "list-checks", id: "aufgaben" },
   { href: "/kontakte", label: "Kontakte", icon: "contact", id: "kontakte" },
-  { href: "/medien", label: "Pläne & Medien", icon: "image", id: "medien" },
-  { href: "/hochladen", label: "Hochladen", icon: "upload", id: "hochladen" },
-  { href: "/assistent", label: "KI-Assistent", icon: "bot", id: "assistent" },
-  { href: "/admin/index.html", label: "Pflegen (CMS)", icon: "pencil", id: "cms" },
 ];
 
 const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) ?? 0) > 0).sort(
@@ -54,7 +58,27 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
       ))
     }
 
-    <div class="group-label">Rollen</div>
+    <div class="group-label">Mitmachen</div>
+    {
+      machen.map((l) => (
+        <a href={l.href} class={current === l.id ? "active" : ""}>
+          <span class="ico"><Icon name={l.icon} /></span>
+          <span>{l.label}</span>
+        </a>
+      ))
+    }
+
+    <div class="group-label">Nachschlagen</div>
+    {
+      nachschlagen.map((l) => (
+        <a href={l.href} class={current === l.id ? "active" : ""}>
+          <span class="ico"><Icon name={l.icon} /></span>
+          <span>{l.label}</span>
+        </a>
+      ))
+    }
+
+    <div class="group-label">Für dich</div>
     {
       ROLES.map((r) => (
         <a href={`/fuer/${r.key}`} class={current === `rolle-${r.key}` ? "active" : ""}>
@@ -64,7 +88,7 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
       ))
     }
 
-    <div class="group-label">Bereiche</div>
+    <div class="group-label">Themen im Detail</div>
     {
       bereiche.map((s) => (
         <a href={`/bereich/${s.key}`} class={current === s.key ? "active" : ""}>
@@ -74,6 +98,12 @@ const bereiche = SECTIONS.filter((s) => s.key !== "_root" && (counts.get(s.key) 
         </a>
       ))
     }
+
+    <div class="group-label">Verwaltung</div>
+    <a href="/admin/index.html" class={current === "cms" ? "active" : ""}>
+      <span class="ico"><Icon name="pencil" /></span>
+      <span>Inhalte pflegen (CMS)</span>
+    </a>
   </nav>
 </aside>
 
