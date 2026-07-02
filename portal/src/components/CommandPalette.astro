@@ -16,6 +16,7 @@ const nav = [
   { url: "/aufgaben", title: "Aufgaben & Fragen", section: "Seite", icon: "list-checks" },
   { url: "/kontakte", title: "Kontakte", section: "Seite", icon: "contact" },
   { url: "/medien", title: "Pläne & Medien", section: "Seite", icon: "image" },
+  { url: "/hochladen", title: "Hochladen", section: "Seite", icon: "upload" },
   { url: "/suche", title: "Suche", section: "Seite", icon: "search" },
   ...ROLES.map((r) => ({ url: `/fuer/${r.key}`, title: `Für ${r.label}`, section: "Rolle", icon: r.icon })),
   ...SECTIONS.filter((s) => s.key !== "_root").map((s) => ({

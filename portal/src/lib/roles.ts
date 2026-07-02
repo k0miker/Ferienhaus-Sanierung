@@ -37,6 +37,7 @@ export const ROLES: RoleView[] = [
     werkzeuge: [
       { href: "/zeitplan", label: "Zeitplan", icon: "calendar-days", desc: "Bauzeitenplan & Abhängigkeiten" },
       { href: "/aufgaben", label: "Aufgaben & Fragen", icon: "list-checks", desc: "Backlog, offene Fragen, ADRs" },
+      { href: "/hochladen", label: "Hochladen", icon: "upload", desc: "Protokolle & Fotos in die Akte" },
       { href: "/kontakte", label: "Kontakte", icon: "contact", desc: "Betriebe je Gewerk" },
       { href: "/kosten", label: "Kosten", icon: "euro", desc: "Budget & Positionen" },
     ],
@@ -58,6 +59,7 @@ export const ROLES: RoleView[] = [
       { href: "/docs/01_bestand/gebaeudedaten", label: "Gebäudedaten", icon: "ruler", desc: "Baujahr, Flächen, Energiebedarf" },
       { href: "/bereich/02_gebaeudehuelle", label: "Gebäudehülle", icon: "layers", desc: "Dämmung, Fenster, Luftdichtheit" },
       { href: "/bereich/03_haustechnik", label: "Haustechnik", icon: "settings", desc: "Heizung, WP, PV, Warmwasser" },
+      { href: "/hochladen", label: "Hochladen", icon: "upload", desc: "Berichte & Nachweise in die Akte" },
       { href: "/bereich/07_foerderung", label: "Förderung", icon: "landmark", desc: "BAFA, KfW, Strategie" },
     ],
     dokumente: [
@@ -79,6 +81,7 @@ export const ROLES: RoleView[] = [
     stats: ["checklisten", "tasks"],
     werkzeuge: [
       { href: "/checklisten", label: "Checklisten", icon: "square-check", desc: "Aufmaß vor Ort erfassen" },
+      { href: "/hochladen", label: "Hochladen", icon: "upload", desc: "Fotos & Dokumente in die Akte" },
       { href: "/medien", label: "Pläne & Medien", icon: "image", desc: "Grundrisse, Fotos, PDFs" },
       { href: "/kontakte", label: "Kontakte", icon: "contact", desc: "Ansprechpartner je Gewerk" },
       { href: "/aufgaben", label: "Aufgaben", icon: "list-checks", desc: "Was ansteht" },
@@ -102,6 +105,7 @@ export const ROLES: RoleView[] = [
       { href: "/", label: "Dashboard", icon: "layout-dashboard", desc: "Ampel, Blocker, Maßnahmen" },
       { href: "/kosten", label: "Kosten", icon: "euro", desc: "Budget & Förderung" },
       { href: "/aufgaben", label: "Entscheidungen", icon: "circle-check", desc: "ADRs & offene Fragen" },
+      { href: "/hochladen", label: "Hochladen", icon: "upload", desc: "Dokumente & Fotos in die Akte" },
       { href: "/checklisten", label: "Checklisten", icon: "square-check", desc: "Erfassung" },
     ],
     dokumente: [

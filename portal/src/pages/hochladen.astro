@@ -1,0 +1,264 @@
+---
+import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
+import { UPLOAD_ZIELE } from "../lib/uploads";
+
+const ziele = Object.entries(UPLOAD_ZIELE).map(([key, z]) => ({ key, ...z }));
+---
+
+<Base title="Hochladen" current="hochladen" crumb="Hochladen">
+  <div class="page-head">
+    <p class="eyebrow"><Icon name="upload" size={13} /> Dokumente & Fotos</p>
+    <h2>In die Akte hochladen</h2>
+    <p class="lead">
+      Fotos, Pläne, Angebote und PDFs landen direkt in der Projektakte und
+      erscheinen unter <a href="/medien">Pläne &amp; Medien</a>. Jeder Upload
+      wird im Protokoll vermerkt (wer, wann, wozu).
+    </p>
+  </div>
+
+  <div class="card up-form">
+    <div class="up-row">
+      <label>
+        <span class="up-label">Dein Name</span>
+        <input type="text" id="up-name" placeholder="z. B. Geske (Dachdecker)" maxlength="60" />
+      </label>
+      <label>
+        <span class="up-label">Zielbereich</span>
+        <select id="up-ziel">
+          {ziele.map((z) => <option value={z.key}>{z.label}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <label>
+      <span class="up-label">Notiz (optional – was ist das, worauf bezieht es sich?)</span>
+      <input type="text" id="up-note" placeholder="z. B. Foto Zählerschrank, Keller" maxlength="500" />
+    </label>
+
+    <div class="dropzone" id="dropzone" tabindex="0">
+      <Icon name="upload" size={28} />
+      <p><b>Dateien hierher ziehen</b> oder klicken zum Auswählen</p>
+      <span class="meta">Fotos (JPG/PNG/HEIC…), PDF, Text – große Fotos werden automatisch verkleinert</span>
+      <input type="file" id="up-files" multiple hidden
+        accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.pdf,.txt,.md,.csv" />
+    </div>
+
+    <ul class="up-list" id="up-list" hidden></ul>
+
+    <div class="up-actions">
+      <button type="button" class="btn primary" id="up-start" disabled>
+        <Icon name="upload" size={15} /> Hochladen
+      </button>
+      <span class="meta" id="up-status"></span>
+    </div>
+  </div>
+
+  <p class="muted" style="font-size:12px; margin-top:20px; display:flex; align-items:center; gap:6px">
+    <Icon name="circle-help" size={13} /> Beim ersten Hochladen wird einmalig der
+    Speicher-Schlüssel abgefragt (derselbe wie bei den Checklisten) und im Browser gemerkt.
+  </p>
+</Base>
+
+<script>
+  const MAX_BYTES = 5 * 1024 * 1024;
+  const COMPRESS_ABOVE = 1.2 * 1024 * 1024;
+  const MAX_DIM = 2000;
+  const WRITE_KEY = "portal:writekey";
+  const NAME_KEY = "portal:uploader";
+
+  const nameInput = document.getElementById("up-name") as HTMLInputElement;
+  const zielInput = document.getElementById("up-ziel") as HTMLSelectElement;
+  const noteInput = document.getElementById("up-note") as HTMLInputElement;
+  const fileInput = document.getElementById("up-files") as HTMLInputElement;
+  const dropzone = document.getElementById("dropzone")!;
+  const list = document.getElementById("up-list") as HTMLUListElement;
+  const startBtn = document.getElementById("up-start") as HTMLButtonElement;
+  const statusEl = document.getElementById("up-status")!;
+
+  nameInput.value = localStorage.getItem(NAME_KEY) || "";
+
+  interface Item {
+    file: File;
+    li: HTMLLIElement;
+    state: HTMLSpanElement;
+    done: boolean;
+  }
+  let items: Item[] = [];
+
+  const fmtSize = (n: number) =>
+    n > 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+
+  function addFiles(files: FileList | File[]) {
+    for (const file of Array.from(files)) {
+      if (items.some((i) => i.file.name === file.name && i.file.size === file.size)) continue;
+      const li = document.createElement("li");
+      const state = document.createElement("span");
+      state.className = "up-state";
+      state.textContent = "bereit";
+      li.innerHTML = `<span class="up-file">${file.name}</span><span class="meta">${fmtSize(file.size)}</span>`;
+      li.appendChild(state);
+      list.appendChild(li);
+      items.push({ file, li, state, done: false });
+    }
+    list.hidden = items.length === 0;
+    startBtn.disabled = items.length === 0;
+  }
+
+  dropzone.addEventListener("click", () => fileInput.click());
+  dropzone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") fileInput.click();
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files) addFiles(fileInput.files);
+    fileInput.value = "";
+  });
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("drag");
+  });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag"));
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("drag");
+    if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
+  });
+
+  /** Große Fotos im Browser verkleinern (JPEG). Fällt bei Fehlern aufs Original zurück. */
+  async function maybeCompress(file: File): Promise<{ blob: Blob; name: string }> {
+    const isImage = /^image\//.test(file.type) || /\.heic$/i.test(file.name);
+    if (!isImage || file.size <= COMPRESS_ABOVE) return { blob: file, name: file.name };
+    try {
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, MAX_DIM / Math.max(bmp.width, bmp.height));
+      const w = Math.round(bmp.width * scale);
+      const h = Math.round(bmp.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(bmp, 0, 0, w, h);
+      bmp.close();
+      const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.85));
+      if (!blob || blob.size >= file.size) return { blob: file, name: file.name };
+      return { blob, name: file.name.replace(/\.[A-Za-z0-9]+$/, "") + ".jpg" };
+    } catch {
+      return { blob: file, name: file.name }; // z. B. HEIC in Browsern ohne Decoder
+    }
+  }
+
+  function toBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(",")[1] ?? "");
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+  }
+
+  function getWriteKey(): string | null {
+    let key = localStorage.getItem(WRITE_KEY) || "";
+    if (!key) {
+      key = prompt("Speicher-Schlüssel (einmalig, wird im Browser gemerkt):") || "";
+      if (!key) return null;
+      localStorage.setItem(WRITE_KEY, key);
+    }
+    return key;
+  }
+
+  startBtn.addEventListener("click", async () => {
+    const uploader = nameInput.value.trim();
+    if (!uploader) {
+      nameInput.focus();
+      statusEl.textContent = "Bitte zuerst deinen Namen eintragen.";
+      return;
+    }
+    localStorage.setItem(NAME_KEY, uploader);
+    const key = getWriteKey();
+    if (!key) return;
+
+    startBtn.disabled = true;
+    let ok = 0;
+    let failed = 0;
+
+    for (const item of items) {
+      if (item.done) continue;
+      try {
+        item.state.textContent = "verkleinern…";
+        const { blob, name } = await maybeCompress(item.file);
+        if (blob.size > MAX_BYTES) {
+          item.state.textContent = "✗ zu groß (max. 5 MB)";
+          item.state.classList.add("err");
+          failed++;
+          continue;
+        }
+        item.state.textContent = `hochladen… (${fmtSize(blob.size)})`;
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            key,
+            uploader,
+            ziel: zielInput.value,
+            note: noteInput.value.trim(),
+            filename: name,
+            data: await toBase64(blob),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (res.status === 401) localStorage.removeItem(WRITE_KEY);
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+        item.done = true;
+        item.state.textContent = "✓ in der Akte";
+        item.state.classList.add("ok");
+        ok++;
+      } catch (err) {
+        item.state.textContent = "✗ " + ((err as Error).message || "Fehler");
+        item.state.classList.add("err");
+        failed++;
+      }
+    }
+
+    startBtn.disabled = false;
+    statusEl.innerHTML =
+      failed === 0
+        ? `✓ ${ok} Datei(en) hochgeladen – <a href="/medien">zu den Medien</a>`
+        : `${ok} ok, ${failed} fehlgeschlagen – fehlgeschlagene erneut versuchen.`;
+    items = items.filter((i) => !i.done || failed > 0);
+    if (failed === 0) {
+      items = [];
+    }
+  });
+</script>
+
+<style>
+  .up-form { display: flex; flex-direction: column; gap: 16px; }
+  .up-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .up-row { grid-template-columns: 1fr; } }
+  .up-form label { display: flex; flex-direction: column; gap: 6px; }
+  .up-label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .up-form input[type="text"], .up-form select {
+    padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text); font: inherit;
+  }
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 34px 18px; text-align: center; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted); transition: border-color 0.15s, background 0.15s;
+  }
+  .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--text); }
+  .dropzone p { margin: 0; }
+  .up-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .up-list li {
+    display: flex; align-items: center; gap: 12px; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel-2);
+    font-size: 13.5px;
+  }
+  .up-file { flex: 1; min-width: 0; word-break: break-all; }
+  .up-state { flex: none; font-size: 12.5px; color: var(--muted); }
+  .up-state.ok { color: #3fb46f; font-weight: 600; }
+  .up-state.err { color: #e05c5c; font-weight: 600; }
+  .up-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+</style>
