@@ -1,0 +1,117 @@
+{
+  "kommentar": "Sanierungsreihenfolge – wird im Portal unter /zeitplan angezeigt und dort per Status-Dropdown gepflegt.",
+  "schritte": [
+    {
+      "nr": 1,
+      "titel": "Unterlagen sammeln und sichern",
+      "phase": "Vorbereitung",
+      "status": "IN ARBEIT",
+      "details": "Energieausweis, Grundriss, Kaufvertrag, PV-Unterlagen digital ablegen",
+      "abhaengig": "—"
+    },
+    {
+      "nr": 2,
+      "titel": "Baurechtliche Nutzung und Förderfähigkeit klären",
+      "phase": "Vorbereitung",
+      "status": "OFFEN",
+      "details": "Stadt/Bauamt: dauerhafte Wohnnutzung? Energieberater: Förderfähigkeit?",
+      "abhaengig": "—"
+    },
+    {
+      "nr": 3,
+      "titel": "Bestandsaufmaß und Fotodokumentation",
+      "phase": "Vorbereitung",
+      "status": "OFFEN",
+      "details": "Raummaße, Fensterinventar, PV-Typenschilder, Elektro → Checklisten nutzen",
+      "abhaengig": "—"
+    },
+    {
+      "nr": 4,
+      "titel": "Statik Wanddurchbruch klären",
+      "phase": "Planung",
+      "status": "OFFEN",
+      "details": "Tragwerksplaner beauftragen – ist die Wand tragend/aussteifend?",
+      "abhaengig": "3"
+    },
+    {
+      "nr": 5,
+      "titel": "Dach, Feuchte, Holz, Außenwand untersuchen",
+      "phase": "Planung",
+      "status": "OFFEN",
+      "details": "Endoskopie Außenwand, Dachboden-Inspektion, Feuchtemesung",
+      "abhaengig": "3"
+    },
+    {
+      "nr": 6,
+      "titel": "Elektro- und Zähleranlage prüfen",
+      "phase": "Planung",
+      "status": "OFFEN",
+      "details": "Bestandsprüfung, Reserven für WP/DLE, FI-Schutz, Leitungsquerschnitte",
+      "abhaengig": "3"
+    },
+    {
+      "nr": 7,
+      "titel": "Zielzustand festlegen (Hülle, Fenster, Lüftung)",
+      "phase": "Planung",
+      "status": "OFFEN",
+      "details": "Dämm-Variante, Fenstertyp, Lüftungskonzept auf Basis der Untersuchungen",
+      "abhaengig": "2, 4, 5"
+    },
+    {
+      "nr": 8,
+      "titel": "Angebote Hülle und Fenster einholen",
+      "phase": "Angebote",
+      "status": "OFFEN",
+      "details": "2–3 Vergleichsangebote je Gewerk, Fensterliste als Grundlage",
+      "abhaengig": "7"
+    },
+    {
+      "nr": 9,
+      "titel": "Sanierte U-Werte und Heizlast ermitteln",
+      "phase": "Planung",
+      "status": "OFFEN",
+      "details": "Raumweise Heizlast für den geplanten Endzustand berechnen",
+      "abhaengig": "7, 8"
+    },
+    {
+      "nr": 10,
+      "titel": "Heizsystem vergleichen und entscheiden",
+      "phase": "Entscheidung",
+      "status": "OFFEN",
+      "details": "Split-Klima vs. LW-WP+FBH – Kosten, Förderung, Komfort bewerten",
+      "abhaengig": "9"
+    },
+    {
+      "nr": 11,
+      "titel": "Warmwasserlösung festlegen",
+      "phase": "Entscheidung",
+      "status": "OFFEN",
+      "details": "Durchlauferhitzer vs. Brauchwasser-WP – abhängig von Heizsystem",
+      "abhaengig": "10"
+    },
+    {
+      "nr": 12,
+      "titel": "Bauablauf, Kostenplan und Reserve finalisieren",
+      "phase": "Entscheidung",
+      "status": "OFFEN",
+      "details": "Reihenfolge der Gewerke, Gesamtbudget, Reserveplanung",
+      "abhaengig": "8, 10, 11"
+    },
+    {
+      "nr": 13,
+      "titel": "Förderanträge stellen",
+      "phase": "Förderung",
+      "status": "OFFEN",
+      "details": "Vor bindender Beauftragung! iSFP, BEG-Einzelmaßnahmen, ggf. KfW",
+      "abhaengig": "2, 12"
+    },
+    {
+      "nr": 14,
+      "titel": "Ausführung mit Dokumentation begleiten",
+      "phase": "Ausführung",
+      "status": "OFFEN",
+      "details": "Foto-, Rechnungs- und Abnahmedokumentation laufend führen",
+      "abhaengig": "13"
+    }
+  ]
+}

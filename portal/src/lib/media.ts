@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+// Wichtig: nicht über import.meta.url auflösen – beim Build wird die Datei in
+// ein Bundle außerhalb von src/ verschoben und der relative Pfad zeigt ins
+// Leere (Medien-Seite bleibt dann leer). Build und Dev laufen beide in portal/.
+const REPO_ROOT = path.resolve(process.cwd(), "..");
 
 export interface MediaFile {
   url: string; // wird über public/-Symlinks ausgeliefert

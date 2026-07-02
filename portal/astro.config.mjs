@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import netlify from "@astrojs/netlify";
 import { rewriteProjectLinks } from "./src/lib/remark-rewrite-links.mjs";
+import { akteAssets } from "./src/lib/akte-assets.mjs";
 
 // https://astro.build
 // Seiten werden statisch vorgerendert; nur API-Routen (prerender=false) laufen
@@ -11,6 +12,7 @@ export default defineConfig({
   adapter: netlify(),
   site: process.env.SITE_URL || "http://localhost:4321",
   trailingSlash: "ignore",
+  integrations: [akteAssets()],
   markdown: {
     remarkPlugins: [rewriteProjectLinks],
     shikiConfig: {

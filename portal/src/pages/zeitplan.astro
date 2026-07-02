@@ -1,128 +1,23 @@
 ---
-import { getCollection } from "astro:content";
+import fs from "node:fs";
+import path from "node:path";
 import Base from "../layouts/Base.astro";
-import { tableUnderHeading } from "../lib/mdtable";
-import { statusClass, cleanStatus } from "../lib/status";
 
-const docs = await getCollection("docs");
-const byId = new Map(docs.map((d) => [d.id.toLowerCase(), d]));
-const status = byId.get("projektstatus");
-const body = status?.body ?? "";
-
-const schritte = [
-  {
-    nr: 1,
-    titel: "Unterlagen sammeln und sichern",
-    phase: "Vorbereitung",
-    status: "IN ARBEIT",
-    details: "Energieausweis, Grundriss, Kaufvertrag, PV-Unterlagen digital ablegen",
-    abhaengig: "—",
-  },
-  {
-    nr: 2,
-    titel: "Baurechtliche Nutzung und Förderfähigkeit klären",
-    phase: "Vorbereitung",
-    status: "OFFEN",
-    details: "Stadt/Bauamt: dauerhafte Wohnnutzung? Energieberater: Förderfähigkeit?",
-    abhaengig: "—",
-  },
-  {
-    nr: 3,
-    titel: "Bestandsaufmaß und Fotodokumentation",
-    phase: "Vorbereitung",
-    status: "OFFEN",
-    details: "Raummaße, Fensterinventar, PV-Typenschilder, Elektro → Checklisten nutzen",
-    abhaengig: "—",
-  },
-  {
-    nr: 4,
-    titel: "Statik Wanddurchbruch klären",
-    phase: "Planung",
-    status: "OFFEN",
-    details: "Tragwerksplaner beauftragen – ist die Wand tragend/aussteifend?",
-    abhaengig: "3",
-  },
-  {
-    nr: 5,
-    titel: "Dach, Feuchte, Holz, Außenwand untersuchen",
-    phase: "Planung",
-    status: "OFFEN",
-    details: "Endoskopie Außenwand, Dachboden-Inspektion, Feuchtemesung",
-    abhaengig: "3",
-  },
-  {
-    nr: 6,
-    titel: "Elektro- und Zähleranlage prüfen",
-    phase: "Planung",
-    status: "OFFEN",
-    details: "Bestandsprüfung, Reserven für WP/DLE, FI-Schutz, Leitungsquerschnitte",
-    abhaengig: "3",
-  },
-  {
-    nr: 7,
-    titel: "Zielzustand festlegen (Hülle, Fenster, Lüftung)",
-    phase: "Planung",
-    status: "OFFEN",
-    details: "Dämm-Variante, Fenstertyp, Lüftungskonzept auf Basis der Untersuchungen",
-    abhaengig: "2, 4, 5",
-  },
-  {
-    nr: 8,
-    titel: "Angebote Hülle und Fenster einholen",
-    phase: "Angebote",
-    status: "OFFEN",
-    details: "2–3 Vergleichsangebote je Gewerk, Fensterliste als Grundlage",
-    abhaengig: "7",
-  },
-  {
-    nr: 9,
-    titel: "Sanierte U-Werte und Heizlast ermitteln",
-    phase: "Planung",
-    status: "OFFEN",
-    details: "Raumweise Heizlast für den geplanten Endzustand berechnen",
-    abhaengig: "7, 8",
-  },
-  {
-    nr: 10,
-    titel: "Heizsystem vergleichen und entscheiden",
-    phase: "Entscheidung",
-    status: "OFFEN",
-    details: "Split-Klima vs. LW-WP+FBH – Kosten, Förderung, Komfort bewerten",
-    abhaengig: "9",
-  },
-  {
-    nr: 11,
-    titel: "Warmwasserlösung festlegen",
-    phase: "Entscheidung",
-    status: "OFFEN",
-    details: "Durchlauferhitzer vs. Brauchwasser-WP – abhängig von Heizsystem",
-    abhaengig: "10",
-  },
-  {
-    nr: 12,
-    titel: "Bauablauf, Kostenplan und Reserve finalisieren",
-    phase: "Entscheidung",
-    status: "OFFEN",
-    details: "Reihenfolge der Gewerke, Gesamtbudget, Reserveplanung",
-    abhaengig: "8, 10, 11",
-  },
-  {
-    nr: 13,
-    titel: "Förderanträge stellen",
-    phase: "Förderung",
-    status: "OFFEN",
-    details: "Vor bindender Beauftragung! iSFP, BEG-Einzelmaßnahmen, ggf. KfW",
-    abhaengig: "2, 12",
-  },
-  {
-    nr: 14,
-    titel: "Ausführung mit Dokumentation begleiten",
-    phase: "Ausführung",
-    status: "OFFEN",
-    details: "Foto-, Rechnungs- und Abnahmedokumentation laufend führen",
-    abhaengig: "13",
-  },
-];
+// Schritte kommen aus der Akte (09_bauablauf/zeitplan.json) und werden dort
+// über /api/zeitplan/save gepflegt (Status-Dropdown unten).
+const zeitplanPath = path.resolve(process.cwd(), "..", "09_bauablauf", "zeitplan.json");
+const zeitplan = JSON.parse(fs.readFileSync(zeitplanPath, "utf8")) as {
+  schritte: {
+    nr: number;
+    titel: string;
+    phase: string;
+    status: string;
+    details: string;
+    abhaengig: string;
+  }[];
+};
+const schritte = zeitplan.schritte;
+const erledigt = schritte.filter((s) => s.status === "ERLEDIGT").length;
 
 const phasen = [...new Set(schritte.map((s) => s.phase))];
 // Mitteltöne: lesbar auf hellem und dunklem Hintergrund (Phasen-Chips)
@@ -135,11 +30,7 @@ const phasenFarbe: Record<string, string> = {
   Ausführung: "#dc2626",
 };
 
-const statusFarbe = (s: string) => {
-  if (s === "IN ARBEIT") return "info";
-  if (s === "ERLEDIGT") return "ok";
-  return "warn";
-};
+const STATUS_OPTIONEN = ["OFFEN", "IN ARBEIT", "ERLEDIGT"];
 ---
 
 <Base title="Zeitplan" current="zeitplan" crumb="Zeitplan">
@@ -147,8 +38,8 @@ const statusFarbe = (s: string) => {
     <p class="eyebrow">Sanierungsreihenfolge</p>
     <h2>Zeitplan</h2>
     <p class="lead">
-      14 Schritte von der Bestandsaufnahme bis zur Ausführung.
-      Abhängigkeiten zeigen, welche Schritte aufeinander aufbauen.
+      {schritte.length} Schritte von der Bestandsaufnahme bis zur Ausführung
+      · {erledigt} erledigt. Status lässt sich direkt hier ändern.
     </p>
   </div>
 
@@ -170,14 +61,18 @@ const statusFarbe = (s: string) => {
           <span class="tl-dot"></span>
           {i < schritte.length - 1 && <span class="tl-line"></span>}
         </div>
-        <div class="card" style="flex:1">
+        <div class={`card${s.status === "ERLEDIGT" ? " step-done" : ""}`} style="flex:1">
           <div style="display:flex; justify-content:space-between; align-items:start; gap:10px; flex-wrap:wrap">
             <h3 style="margin:0; font-size:15px">
               <span class="muted" style="font-size:13px; margin-right:6px">#{s.nr}</span>
               {s.titel}
             </h3>
-            <div style="display:flex; gap:6px; flex-shrink:0">
-              <span class={`badge ${statusFarbe(s.status)}`}>{s.status}</span>
+            <div style="display:flex; gap:6px; flex-shrink:0; align-items:center">
+              <select class="status-select" data-nr={s.nr} data-prev={s.status} aria-label={`Status von Schritt ${s.nr}`}>
+                {STATUS_OPTIONEN.map((o) => (
+                  <option value={o} selected={o === s.status}>{o}</option>
+                ))}
+              </select>
               <span style={`font-size:11px; padding:3px 9px; border-radius:20px; background:${phasenFarbe[s.phase]}22; color:${phasenFarbe[s.phase]}; border:1px solid ${phasenFarbe[s.phase]}44; font-weight:600`}>
                 {s.phase}
               </span>
@@ -194,12 +89,82 @@ const statusFarbe = (s: string) => {
     ))}
   </div>
 
-  <div class="btn-row" style="margin-top:24px">
+  <p class="muted" style="font-size:12px; margin-top:14px">
+    Änderungen werden in der Projektakte gespeichert (<code>09_bauablauf/zeitplan.json</code>).
+    Online dauert es nach dem Speichern ca. 1–2 Minuten, bis die Seite neu gebaut ist.
+  </p>
+
+  <div class="btn-row" style="margin-top:12px">
     <a class="btn" href="/docs/projektstatus">Voller Projektstatus</a>
     <a class="btn" href="/aufgaben">Aufgaben & Fragen</a>
     <a class="btn" href="/docs/09_bauablauf/bauzeitenplan">Bauzeitenplan</a>
   </div>
+
+  <div id="save-toast" class="save-toast" hidden></div>
 </Base>
+
+<script>
+  const WRITE_KEY = "portal:writekey";
+  const toast = document.getElementById("save-toast")!;
+  let toastTimer: number | undefined;
+
+  function showToast(msg: string, ok: boolean) {
+    toast.textContent = msg;
+    toast.classList.toggle("err", !ok);
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => (toast.hidden = true), 3500);
+  }
+
+  function getKey(): string | null {
+    let key = localStorage.getItem(WRITE_KEY) || "";
+    if (!key) {
+      key = prompt("Speicher-Schlüssel (einmalig, wird im Browser gemerkt):") || "";
+      if (!key) return null;
+      localStorage.setItem(WRITE_KEY, key);
+    }
+    return key;
+  }
+
+  function styleSelect(sel: HTMLSelectElement) {
+    sel.dataset.status = sel.value;
+  }
+
+  document.querySelectorAll<HTMLSelectElement>(".status-select").forEach((sel) => {
+    styleSelect(sel);
+    sel.addEventListener("change", async () => {
+      const prev = sel.dataset.prev || "OFFEN";
+      const key = getKey();
+      if (!key) {
+        sel.value = prev;
+        return;
+      }
+      sel.disabled = true;
+      try {
+        const res = await fetch("/api/zeitplan/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nr: Number(sel.dataset.nr), status: sel.value, key }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (res.status === 401) localStorage.removeItem(WRITE_KEY);
+          throw new Error(data.error || `Fehler ${res.status}`);
+        }
+        sel.dataset.prev = sel.value;
+        styleSelect(sel);
+        sel.closest(".card")?.classList.toggle("step-done", sel.value === "ERLEDIGT");
+        showToast(`Schritt ${sel.dataset.nr}: ${sel.value} gespeichert`, true);
+      } catch (err) {
+        sel.value = prev;
+        styleSelect(sel);
+        showToast(`Speichern fehlgeschlagen: ${(err as Error).message}`, false);
+      } finally {
+        sel.disabled = false;
+      }
+    });
+  });
+</script>
 
 <style>
   .timeline {
@@ -238,5 +203,49 @@ const statusFarbe = (s: string) => {
   }
   .tl-item .card {
     margin-bottom: 12px;
+  }
+  .tl-item .card.step-done {
+    opacity: 0.72;
+  }
+  .status-select {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .status-select[data-status="ERLEDIGT"] {
+    background: #16a34a22;
+    color: #16a34a;
+    border-color: #16a34a55;
+  }
+  .status-select[data-status="IN ARBEIT"] {
+    background: #2563eb22;
+    color: #2563eb;
+    border-color: #2563eb55;
+  }
+  .status-select[data-status="OFFEN"] {
+    background: #d9770622;
+    color: #d97706;
+    border-color: #d9770655;
+  }
+  .save-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #16a34a;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+    z-index: 100;
+  }
+  .save-toast.err {
+    background: #dc2626;
   }
 </style>

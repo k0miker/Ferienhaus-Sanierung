@@ -2,11 +2,10 @@
 
 ## Offen
 
-- [ ] Grundrisse ablegen oder erstellen
 - [ ] Wandaufbau pruefen (Endoskopie beauftragen)
 - [ ] Dachaufbau dokumentieren
 - [ ] Fensterliste mit Massen erstellen (Vorlage in Checklisten)
-- [ ] PV-Unterlagen sammeln und auswerten
+- [ ] PV-Anlage auswerten (Typenschilder, Wechselrichter, Verguetung – siehe 03_haustechnik/pv-anlage.md)
 - [ ] Heizlast grob abschaetzen
 - [ ] Foerdermoeglichkeiten aktuell pruefen
 - [ ] Baurechtliche Nutzung klaeren (Stadt/Bauamt)
@@ -20,10 +19,11 @@
 
 ## In Arbeit
 
-- [ ] Bauunterlagen sammeln und auswerten
-
 ## Erledigt
 
+- [x] Bauunterlagen sammeln und auswerten (Baugenehmigung, Grundrisse, PV in 01_bestand)
+- [x] Grundrisse abgelegt (01_bestand/grundrisse)
+- [x] PV-Unterlagen gesammelt (26 388 014 PV.pdf + PV2.pdf in 01_bestand/bauunterlagen)
 - [x] Projektstruktur angelegt
 - [x] Bauunterlagen 1978 (VARIODOMO) ausgewertet
 - [x] Kostenprognose erstellt (Marktrecherche)

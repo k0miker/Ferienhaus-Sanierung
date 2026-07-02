@@ -11,7 +11,7 @@
 | --- | --- | --- | --- |
 | **Geske Haus- und Versorgungstechnik GmbH** | Fürstenau | Tel 05901 2253 · geske-shk.de | Vom Eigentümer genannt. Auch Bauklempnerei (Dachblech). Adresse [WIDERSPRUCH] Lengericher Weg 12/17 |
 | **Santel GmbH & Co. KG** | Fürstenau-Schwagstorf | Tel 05901 93940 · santel@santel.de · santel.de | Vom Eigentümer genannt. Hauptstr. 15. Bad-/Küchenausstellung, WP, Solar, PV |
-| **J. B. Haverkamp Elektro- und Montagebau GmbH** | Fürstenau | haverkamp-hausdienstleistung.de | Vom Eigentümer genannt. SHK + Elektro, Wärmepumpe |
+| **J. B. Haverkamp Elektro- und Montagebau GmbH** | Fürstenau | Tel 05901 4712 | haverkamp-hausdienstleistung.de | Vom Eigentümer genannt. SHK + Elektro, Wärmepumpe |
 
 ## Einblasdämmung / Kerndämmung (Außenwand)
 
