@@ -12,6 +12,7 @@
     "cms": "cd .. && portal/node_modules/.bin/decap-server"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.109.1",
     "@astrojs/netlify": "^6.6.5",
     "astro": "^5.6.1",
     "playwright": "^1.61.1"
